@@ -65,6 +65,19 @@ SYSTEM_DEBLOAT+="
 system/app/MAPSAgent
 "
 
+# HwModuleTest
+SYSTEM_DEBLOAT+="
+system/app/Cameralyzer
+system/app/FactoryAirCommandManager
+system/app/FactoryCameraFB
+system/app/WlanTest
+system/etc/default-permissions/default-permissions-com.sec.factory.cameralyzer.xml
+system/etc/permissions/privapp-permissions-com.samsung.android.providers.factory.xml
+system/etc/permissions/privapp-permissions-com.sec.facatfunction.xml
+system/priv-app/FacAtFunction
+system/priv-app/FactoryTestProvider
+"
+
 # AppUpdateCenter
 SYSTEM_DEBLOAT+="
 system/etc/permissions/privapp-permissions-com.samsung.android.app.updatecenter.xml
@@ -122,22 +135,34 @@ SYSTEM_DEBLOAT+="
 system/app/PlayAutoInstallConfig
 "
 
-# HwModuleTest
-SYSTEM_DEBLOAT+="
-system/app/Cameralyzer
-system/app/FactoryAirCommandManager
-system/app/FactoryCameraFB
-system/app/HMT
-system/app/WlanTest
-system/etc/default-permissions/default-permissions-com.sec.factory.cameralyzer.xml
-system/etc/permissions/privapp-permissions-com.samsung.android.providers.factory.xml
-system/etc/permissions/privapp-permissions-com.sec.facatfunction.xml
-system/priv-app/FacAtFunction
-system/priv-app/FactoryTestProvider
-"
-
 # Language packs
 SYSTEM_DEBLOAT+="$(find "$WORK_DIR/system" -type d -name "*TTSVoice*" | sed "s|$WORK_DIR/system/||g")"
+
+# Main TTS app (kept for SMT.LanguageProvider content provider,
+# needed by Galaxy AI language pack downloads)
+# SYSTEM_DEBLOAT+="
+# system/app/SamsungTTS
+# "
+
+# Samsung Kids
+SYSTEM_DEBLOAT+="
+system/app/KidsHome_Installer
+"
+# Auto Blocker
+SYSTEM_DEBLOAT+="
+system/app/Rampart
+"
+
+# Samsung Notes
+SYSTEM_DEBLOAT+="
+system/app/Notes40
+"
+
+# Bixby
+SYSTEM_DEBLOAT+="
+system/priv-app/Bixby
+system/app/BixbyWakeup
+"
 
 # LED Cover Service
 [ "$(GET_FLOATING_FEATURE_CONFIG "SEC_FLOATING_FEATURE_FRAMEWORK_CONFIG_NFC_LED_COVER_LEVEL")" -lt "30" ] && SYSTEM_DEBLOAT+="
@@ -145,13 +170,28 @@ system/etc/permissions/privapp-permissions-com.sec.android.cover.ledcover.xml
 system/priv-app/LedCoverService
 "
 
+# Spen
+SYSTEM_DEBLOAT+="
+system/app/AirGlance
+system/app/LiveDrawing
+system/etc/default-permissions/default-permissions-com.samsung.android.service.aircommand.xml
+system/etc/permissions/privapp-permissions-com.samsung.android.app.readingglass.xml
+system/etc/permissions/privapp-permissions-com.samsung.android.service.aircommand.xml
+system/etc/permissions/privapp-permissions-com.samsung.android.service.airviewdictionary.xml
+system/etc/public.libraries-smps.samsung.txt
+system/etc/sysconfig/airviewdictionaryservice.xml
+system/lib64/libsmpsft.smps.samsung.so
+system/media/audio/pensounds
+system/priv-app/AirCommand
+system/priv-app/AirReadingGlass
+system/priv-app/SmartEye
+"
+
 # Link to Windows
 # Replace full apk with stub apk to save space
 SYSTEM_DEBLOAT+="
 system/priv-app/YourPhone_P1_5
 "
-
-ADD_TO_WORK_DIR "gta9pxxx" "system" "system/priv-app/YourPhone_Stub/YourPhone_Stub.apk" 0 0 644 "u:object_r:system_file:s0"
 
 # Live Transcribe
 SYSTEM_DEBLOAT+="
@@ -203,6 +243,7 @@ system/etc/permissions/privapp-permissions-com.sec.android.mimage.avatarstickers
 system/etc/permissions/signature-permissions-com.sec.android.mimage.avatarstickers.xml
 system/priv-app/AREmojiEditor
 system/priv-app/AvatarEmojiSticker
+system/priv-app/StickerFaceARAvatar
 "
 
 # Samsung Calendar
@@ -226,11 +267,14 @@ system/etc/permissions/signature-permissions-com.samsung.android.offline.languag
 system/priv-app/OfflineLanguageModel_stub
 "
 
-# Samsung Messages
-SYSTEM_DEBLOAT+="
-system/etc/default-permissions/default-permissions-com.samsung.android.messaging.xml
-system/etc/permissions/privapp-permissions-com.samsung.android.messaging.xml
-system/priv-app/SamsungMessages
+# Google Messages
+PRODUCT_DEBLOAT+="
+priv-app/Messages
+"
+
+# Google
+PRODUCT_DEBLOAT+="
+priv-app/Velvet
 "
 
 # Samsung Pass
@@ -255,7 +299,6 @@ system/app/SmartReminder
 
 # Samsung Visit In
 SYSTEM_DEBLOAT+="
-system/etc/permissions/com.samsung.feature.ipsgeofence.xml
 system/etc/permissions/privapp-permissions-com.samsung.android.ipsgeofence.xml
 system/priv-app/IpsGeofence
 "
