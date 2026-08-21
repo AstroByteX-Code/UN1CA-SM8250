@@ -4,13 +4,13 @@ TARGET_FIRMWARE_PATH="$(cut -d "/" -f 1 -s <<< "$TARGET_FIRMWARE")_$(cut -d "/" 
 SOURCE_HAS_UWB="$(test -f "$FW_DIR/$SOURCE_FIRMWARE_PATH/vendor/etc/permissions/android.hardware.uwb.xml" && echo "true" || echo "false")"
 TARGET_HAS_UWB="$(test -f "$FW_DIR/$TARGET_FIRMWARE_PATH/vendor/etc/permissions/android.hardware.uwb.xml" && echo "true" || echo "false")"
 
-if ! $SOURCE_HAS_UWB; then
-    if $TARGET_HAS_UWB; then
+if [ "$SOURCE_HAS_UWB" != "true" ]; then
+    if [ "$TARGET_HAS_UWB" = "true" ]; then
         if [[ "$TARGET_OS_SINGLE_SYSTEM_IMAGE" == "mssi" ]]; then
             ABORT "\"mssi\" system image does not support targets with UWB. Aborting"
         fi
 
-        LOG "- Adding \"ro.boot.uwbcountrycode\" prop with \"ff\" in /product/etc/build.prop"
+       LOG "- Adding \"ro.boot.uwbcountrycode\" prop with \"ff\" in /product/etc/build.prop"
         EVAL "sed -i \"/usb.config/a ro.boot.uwbcountrycode=ff\" \"$WORK_DIR/product/etc/build.prop\""
 
         ADD_TO_WORK_DIR "b0qxxx" "product" \
@@ -50,10 +50,24 @@ if ! $SOURCE_HAS_UWB; then
         LOG "\033[0;33m! Nothing to do\033[0m"
     fi
 else
-    if [[ "$SOURCE_HAS_UWB" == "true" && "$TARGET_HAS_UWB" == "true" ]]; then
+    if [ "$TARGET_HAS_UWB" != "true" ]; then
+        LOG "- Removing UWB blobs for non-UWB target"
+        DELETE_FROM_WORK_DIR "system" "system/app/UwbTest"
+        DELETE_FROM_WORK_DIR "system" "system/etc/init/init.system.uwb.rc"
+        DELETE_FROM_WORK_DIR "system" "system/etc/permissions/com.samsung.android.uwb_extras.xml"
+        DELETE_FROM_WORK_DIR "system" "system/etc/permissions/privapp-permissions-com.sec.android.app.uwbtest.xml"
+        DELETE_FROM_WORK_DIR "system" "system/etc/libuwb-cal.conf"
+        DELETE_FROM_WORK_DIR "system" "system/etc/pp_model.tflite"
+        DELETE_FROM_WORK_DIR "system" "system/framework/com.samsung.android.uwb_extras.jar"
+        DELETE_FROM_WORK_DIR "system" "system/framework/semuwb-service.jar"
+        DELETE_FROM_WORK_DIR "system" "system/lib/libtflite_uwb_jni.so"
+        DELETE_FROM_WORK_DIR "system" "system/lib64/libtflite_uwb_jni.so"
+        DELETE_FROM_WORK_DIR "system_ext" "framework/org.carconnectivity.android.digitalkey.timesync.jar"
+        DELETE_FROM_WORK_DIR "system_ext" "priv-app/DckTimeSyncService"
+    else
         LOG "\033[0;32m+ Applying UWB patch\033[0m"
         # ... patch logic here ...
-    else
-        LOG "- Target has no UWB. Ignoring."
     fi
 fi
+
+unset SOURCE_FIRMWARE_PATH TARGET_FIRMWARE_PATH SOURCE_HAS_UWB TARGET_HAS_UWB
