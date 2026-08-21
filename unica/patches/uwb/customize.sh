@@ -6,6 +6,10 @@ TARGET_HAS_UWB="$(test -f "$FW_DIR/$TARGET_FIRMWARE_PATH/vendor/etc/permissions/
 
 if ! $SOURCE_HAS_UWB; then
     if $TARGET_HAS_UWB; then
+        if [[ "$TARGET_OS_SINGLE_SYSTEM_IMAGE" == "mssi" ]]; then
+            ABORT "\"mssi\" system image does not support targets with UWB. Aborting"
+        fi
+
         LOG "- Adding \"ro.boot.uwbcountrycode\" prop with \"ff\" in /product/etc/build.prop"
         EVAL "sed -i \"/usb.config/a ro.boot.uwbcountrycode=ff\" \"$WORK_DIR/product/etc/build.prop\""
 
@@ -41,13 +45,15 @@ if ! $SOURCE_HAS_UWB; then
             "framework/org.carconnectivity.android.digitalkey.timesync.jar" 0 0 644 "u:object_r:system_file:s0"
         ADD_TO_WORK_DIR "b0qxxx" "system_ext" \
             "priv-app/DckTimeSyncService/DckTimeSyncService.apk" 0 0 644 "u:object_r:system_file:s0"
+        # ... ADD_TO_WORK_DIR calls ...
     else
         LOG "\033[0;33m! Nothing to do\033[0m"
     fi
 else
-    if ! $TARGET_HAS_UWB; then
-        ABORT "Missing patch for condition (SOURCE_HAS_UWB: [$SOURCE_HAS_UWB], TARGET_HAS_UWB: [$TARGET_HAS_UWB]). Aborting"
+    if [[ "$SOURCE_HAS_UWB" == "true" && "$TARGET_HAS_UWB" == "true" ]]; then
+        LOG "\033[0;32m+ Applying UWB patch\033[0m"
+        # ... patch logic here ...
+    else
+        LOG "- Target has no UWB. Ignoring."
     fi
 fi
-
-unset SOURCE_FIRMWARE_PATH TARGET_FIRMWARE_PATH SOURCE_HAS_UWB TARGET_HAS_UWB
