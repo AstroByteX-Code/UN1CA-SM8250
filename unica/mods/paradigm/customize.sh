@@ -63,8 +63,13 @@ if $TARGET_COMMON_SUPPORT_DYN_RESOLUTION_CONTROL; then
             "$MODPATH/ead_resolution_legacy/SecSettings.apk/0001-Add-Adaptive-color-tone-feature.patch"
     fi
 else
-    APPLY_PATCH "system" "system/priv-app/SecSettings/SecSettings.apk" \
-        "$MODPATH/ead/SecSettings.apk/0001-Add-Adaptive-color-tone-feature.patch"
+    if [[ "$TARGET_COMMON_SUPPORT_DYN_RESOLUTION_CONTROL" == "false" ]]; then
+        APPLY_PATCH "system" "system/priv-app/SecSettings/SecSettings.apk" \
+            "$MODPATH/ead/SecSettings.apk/0001-Add-Adaptive-color-tone-feature-non-DR.patch"
+    else
+        APPLY_PATCH "system" "system/priv-app/SecSettings/SecSettings.apk" \
+            "$MODPATH/ead/SecSettings.apk/0001-Add-Adaptive-color-tone-feature.patch"
+    fi
 fi
 APPLY_PATCH "system" "system/priv-app/SettingsProvider/SettingsProvider.apk" \
     "$MODPATH/ead/SettingsProvider.apk/0001-Add-Adaptive-color-tone-feature.patch"
@@ -163,6 +168,11 @@ LOG "- Downloading latest Game Booster app"
 DOWNLOAD_FILE "$(GET_GALAXY_STORE_DOWNLOAD_URL "com.samsung.android.game.gametools")" \
     "$WORK_DIR/system/system/priv-app/GameTools_Dream/GameTools_Dream.apk"
 
+# Apps crashing due to debloat
+LOG_STEP_IN "- Fixing app crashes"
+ADD_TO_WORK_DIR "$SRC_DIR/prebuilts/extras" "system" "system/etc/permissions"
+LOG_STEP_OUT
+
 # Pet Detector in Galaxy AI
 LOG_STEP_IN "- Adding Pet Detector support in Galaxy AI features"
 if [ -d "$WORK_DIR/vendor/etc/petdetector/studio_pd" ]; then
@@ -171,4 +181,21 @@ fi
 ADD_TO_WORK_DIR "gts11xx" "vendor" "etc/petdetector/studio_pd/config_thresholds.json" 0 0 644 "u:object_r:vendor_configs_file:s0"
 ADD_TO_WORK_DIR "gts11xx" "vendor" "etc/petdetector/studio_pd/studio_pd_cnn.info" 0 0 644 "u:object_r:vendor_configs_file:s0"
 ADD_TO_WORK_DIR "gts11xx" "vendor" "etc/petdetector/studio_pd/studio_pd_cnn.tflite" 0 0 644 "u:object_r:vendor_configs_file:s0"
+LOG_STEP_OUT
+
+# Gallery Ai Visual 
+LOG_STEP_IN "- Adding pa3q Gallery libs"
+ADD_TO_WORK_DIR "pa3qxxx" "system" "system/lib64/libArtifactDetector_v1.camera.samsung.so" 0 0 644 "u:object_r:system_file:s0"
+ADD_TO_WORK_DIR "pa3qxxx" "system" "system/lib64/libphotohdr.so" 0 0 644 "u:object_r:system_file:s0"
+ADD_TO_WORK_DIR "pa3qxxx" "system" "system/lib64/libtensorflowlite_gpu_delegate.so" 0 0 644 "u:object_r:system_file:s0"
+ADD_TO_WORK_DIR "pa3qxxx" "system" "system/lib64/libmediacapture.so" 0 0 644 "u:object_r:system_file:s0"
+ADD_TO_WORK_DIR "pa3qxxx" "system" "system/lib64/libmediacapture_jni.so" 0 0 644 "u:object_r:system_file:s0"
+ADD_TO_WORK_DIR "pa3qxxx" "system" "system/lib64/libmediacaptureservice.so" 0 0 644 "u:object_r:system_file:s0"
+ADD_TO_WORK_DIR "pa3qxxx" "system" "system/lib64/libvideoframedec.so" 0 0 644 "u:object_r:system_file:s0"
+ADD_TO_WORK_DIR "pa3qxxx" "system" "system/lib64/libvideoframedec_jni.so" 0 0 644 "u:object_r:system_file:s0"
+ADD_TO_WORK_DIR "pa3qxxx" "system" "system/lib64/libveframework.videoeditor.samsung.so" 0 0 644 "u:object_r:system_file:s0"
+ADD_TO_WORK_DIR "pa3qxxx" "system" "system/lib64/libsbs.so" 0 0 644 "u:object_r:system_file:s0"
+ADD_TO_WORK_DIR "pa3qxxx" "system" "system/lib64/libsimba.media.samsung.so" 0 0 644 "u:object_r:system_file:s0"
+ADD_TO_WORK_DIR "pa3qxxx" "system" "system/etc/mss_v0.13.0_4ch.sorione" 0 0 644 "u:object_r:system_file:s0"
+ADD_TO_WORK_DIR "pa3qxxx" "system" "system/etc/palm_classifier.tflite" 0 0 644 "u:object_r:system_file:s0"
 LOG_STEP_OUT
