@@ -7,75 +7,29 @@ source "$SRC_DIR/scripts/utils/build_utils.sh" || exit 1
 
 FORCE=false
 BUILD_ROM=false
-BUILD_TARGET_FILES=true
-BUILD_FLASHABLE_ZIP=false
+BUILD_ZIP=true
+DEBUG=false
 
 START_TIME="$(date +%s)"
 
 SOURCE_FIRMWARE_PATH="$(cut -d "/" -f 1 -s <<< "$SOURCE_FIRMWARE")_$(cut -d "/" -f 2 -s <<< "$SOURCE_FIRMWARE")"
 TARGET_FIRMWARE_PATH="$(cut -d "/" -f 1 -s <<< "$TARGET_FIRMWARE")_$(cut -d "/" -f 2 -s <<< "$TARGET_FIRMWARE")"
 
-BUILD_APKS()
-{
-    local MAX_JOBS
-    local PARTITION
-    local RUNS="0"
-    local CODE="0"
-
-    MAX_JOBS="$(nproc)"
-    [ "$MAX_JOBS" -gt "8" ] && MAX_JOBS="8"
-
-    if [ -d "$APKTOOL_DIR" ]; then
-        LOG_STEP_IN true "Building APKs/JARs"
-
-        while IFS= read -r f; do
-            if [ "$RUNS" -ge "$MAX_JOBS" ]; then
-                wait -n || CODE="1"
-                RUNS="$((RUNS - 1))"
-            fi
-
-            f="${f/$APKTOOL_DIR\//}"
-            PARTITION="$(cut -d "/" -f 1 -s <<< "$f")"
-            if [[ "$PARTITION" == "system" ]]; then
-                "$SRC_DIR/scripts/apktool.sh" b -j "$MAX_JOBS" "system" "$f" &
-            else
-                "$SRC_DIR/scripts/apktool.sh" b -j "$MAX_JOBS" "$PARTITION" "$(cut -d "/" -f 2- -s <<< "$f")" &
-            fi
-            RUNS="$((RUNS + 1))"
-        done < <(find "$APKTOOL_DIR" -type d \( -name "*.apk" -o -name "*.jar" \))
-
-        while [ "$RUNS" -gt "0" ]; do
-            wait -n || CODE="1"
-            RUNS="$((RUNS - 1))"
-        done
-        [[ "$CODE" != "0" ]] && exit 1
-
-        LOG_STEP_OUT
-    fi
-}
-
 GET_WORK_DIR_HASH()
 {
-    if [ "${TARGET_PLATFORM//none/}" ] && [ -d "$SRC_DIR/platform/$TARGET_PLATFORM" ]; then
-        find "$SRC_DIR/unica" "$SRC_DIR/platform/$TARGET_PLATFORM" "$SRC_DIR/target/$TARGET_CODENAME" -type f -print0 | \
-            sort -z | xargs -0 sha1sum | sha1sum | cut -d " " -f 1
-    else
-        find "$SRC_DIR/unica" "$SRC_DIR/target/$TARGET_CODENAME" -type f -print0 | \
-            sort -z | xargs -0 sha1sum | sha1sum | cut -d " " -f 1
-    fi
+    find "$SRC_DIR/unica" "$SRC_DIR/target/$TARGET_CODENAME" -type f -print0 | \
+        sort -z | xargs -0 sha1sum | sha1sum | cut -d " " -f 1
 }
 
 PREPARE_SCRIPT()
 {
-    while [[ "$#" != 0 ]]; do
+    while [ "$#" != 0 ]; do
         if [[ "$1" == "--force" ]] || [[ "$1" == "-f" ]]; then
             FORCE=true
-        elif [[ "$1" == "--no-target-files" ]] || [[ "$1" == "-x" ]]; then
-            BUILD_TARGET_FILES=false
-            BUILD_FLASHABLE_ZIP=false
-        elif [[ "$1" == "--build-rom-zip" ]] || [[ "$1" == "-z" ]]; then
-            BUILD_TARGET_FILES=true
-            BUILD_FLASHABLE_ZIP=true
+        elif [[ "$1" == "--no-rom-zip" ]]; then
+            BUILD_ZIP=false
+        elif [[ "$1" == "--debug" ]]; then
+            DEBUG=true
         else
             if [[ "$1" == "-"* ]]; then
                 LOGE "Unknown option: $1"
@@ -88,7 +42,6 @@ PREPARE_SCRIPT()
     done
 }
 
-# shellcheck disable=SC2317,SC2329
 PRINT_BUILD_OUTCOME()
 {
     local EXIT_CODE="$?"
@@ -98,7 +51,7 @@ PRINT_BUILD_OUTCOME()
     END_TIME="$(date +%s)"
     ESTIMATED="$((END_TIME - START_TIME))"
 
-    if [[ "$EXIT_CODE" != "0" ]]; then
+    if [ "$EXIT_CODE" != "0" ]; then
         echo -n -e '\n\033[1;31m'"Build failed "
     else
         echo -n -e '\n\033[1;32m'"Build completed "
@@ -110,8 +63,8 @@ PRINT_USAGE()
 {
     echo "Usage: make_rom [options]" >&2
     echo " -f, --force : Force ROM build" >&2
-    echo " -x, --no-target-files : Do not build target-files zip" >&2
-    echo " -z, --build-rom-zip : Build flashable zip" >&2
+    echo " --no-rom-zip : Do not build ROM zip" >&2
+    echo " --debug : Create a debug build" >&2
 }
 # ]
 
@@ -177,33 +130,32 @@ if $BUILD_ROM; then
         LOG_STEP_OUT
     fi
 
-    BUILD_APKS
+    if [ -d "$APKTOOL_DIR" ]; then
+        LOG_STEP_IN true "Building APKs/JARs"
+
+        while IFS= read -r f; do
+            f="${f/$APKTOOL_DIR\//}"
+            PARTITION="$(cut -d "/" -f 1 -s <<< "$f")"
+            if [[ "$PARTITION" == "system" ]]; then
+                "$SRC_DIR/scripts/apktool.sh" b "system" "$f" &
+            else
+                "$SRC_DIR/scripts/apktool.sh" b "$PARTITION" "$(cut -d "/" -f 2- -s <<< "$f")" &
+            fi
+        done < <(find "$APKTOOL_DIR" -type d \( -name "*.apk" -o -name "*.jar" \))
+
+        # shellcheck disable=SC2046
+        wait $(jobs -p) || exit 1
+
+        LOG_STEP_OUT
+    fi
 
     echo -n "$(GET_WORK_DIR_HASH)" > "$WORK_DIR/.completed"
 fi
 
-if $BUILD_TARGET_FILES || $BUILD_FLASHABLE_ZIP; then
-    ZIP_FILE_NAME="${TARGET_CODENAME}_"
-    if [ "$(GET_PROP "system" "ro.unica.version")" ]; then
-        ZIP_FILE_NAME+="$(GET_PROP "system" "ro.unica.version")"
-    else
-        ZIP_FILE_NAME+="$ROM_VERSION"
-    fi
-    ZIP_FILE_NAME+="-target_files.zip"
-
-    if [ ! -f "$OUT_DIR/$ZIP_FILE_NAME" ]; then
-        LOG_STEP_IN true "Creating target-files zip"
-        "$SRC_DIR/scripts/internal/create_target_files_zip.sh" "$OUT_DIR/$ZIP_FILE_NAME" || exit 1
-        LOG_STEP_OUT
-    else
-        LOGW "File already exists: ${OUT_DIR//$SRC_DIR\//}/$ZIP_FILE_NAME"
-    fi
-
-    if $BUILD_FLASHABLE_ZIP; then
-        LOG_STEP_IN true "Creating flashable zip"
-        "$SRC_DIR/scripts/build_flashable_zip.sh" "$OUT_DIR/$ZIP_FILE_NAME" || exit 1
-        LOG_STEP_OUT
-    fi
+if $BUILD_ZIP; then
+    LOG_STEP_IN true "Creating zip"
+    "$SRC_DIR/scripts/internal/build_flashable_zip.sh" || exit 1
+    LOG_STEP_OUT
 fi
 
 exit 0
