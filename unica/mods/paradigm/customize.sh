@@ -172,3 +172,20 @@ ADD_TO_WORK_DIR "gts11xx" "vendor" "etc/petdetector/studio_pd/config_thresholds.
 ADD_TO_WORK_DIR "gts11xx" "vendor" "etc/petdetector/studio_pd/studio_pd_cnn.info" 0 0 644 "u:object_r:vendor_configs_file:s0"
 ADD_TO_WORK_DIR "gts11xx" "vendor" "etc/petdetector/studio_pd/studio_pd_cnn.tflite" 0 0 644 "u:object_r:vendor_configs_file:s0"
 LOG_STEP_OUT
+
+# Gallery Ai Visual 
+LOG_STEP_IN "- Adding pa3q Gallery libs"
+ADD_TO_WORK_DIR "pa3qxxx" "system" "system/lib64/libArtifactDetector_v1.camera.samsung.so" 0 0 644 "u:object_r:system_file:s0"
+ADD_TO_WORK_DIR "pa3qxxx" "system" "system/lib64/libphotohdr.so" 0 0 644 "u:object_r:system_file:s0"
+ADD_TO_WORK_DIR "pa3qxxx" "system" "system/lib64/libtensorflowlite_gpu_delegate.so" 0 0 644 "u:object_r:system_file:s0"
+ADD_TO_WORK_DIR "pa3qxxx" "system" "system/lib64/libmediacapture.so" 0 0 644 "u:object_r:system_file:s0"
+ADD_TO_WORK_DIR "pa3qxxx" "system" "system/lib64/libmediacapture_jni.so" 0 0 644 "u:object_r:system_file:s0"
+ADD_TO_WORK_DIR "pa3qxxx" "system" "system/lib64/libmediacaptureservice.so" 0 0 644 "u:object_r:system_file:s0"
+ADD_TO_WORK_DIR "pa3qxxx" "system" "system/lib64/libvideoframedec.so" 0 0 644 "u:object_r:system_file:s0"
+ADD_TO_WORK_DIR "pa3qxxx" "system" "system/lib64/libvideoframedec_jni.so" 0 0 644 "u:object_r:system_file:s0"
+ADD_TO_WORK_DIR "pa3qxxx" "system" "system/lib64/libveframework.videoeditor.samsung.so" 0 0 644 "u:object_r:system_file:s0"
+ADD_TO_WORK_DIR "pa3qxxx" "system" "system/lib64/libsbs.so" 0 0 644 "u:object_r:system_file:s0"
+ADD_TO_WORK_DIR "pa3qxxx" "system" "system/lib64/libsimba.media.samsung.so" 0 0 644 "u:object_r:system_file:s0"
+ADD_TO_WORK_DIR "pa3qxxx" "system" "system/etc/mss_v0.13.0_4ch.sorione" 0 0 644 "u:object_r:system_file:s0"
+ADD_TO_WORK_DIR "pa3qxxx" "system" "system/etc/palm_classifier.tflite" 0 0 644 "u:object_r:system_file:s0"
+LOG_STEP_OUT
