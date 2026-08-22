@@ -1,14 +1,14 @@
-TARGET_FIRMWARE_PATH="$(cut -d "/" -f 1 -s <<< "$TARGET_FIRMWARE")_$(cut -d "/" -f 2 -s <<< "$TARGET_FIRMWARE")"
+TWOTHREE_TARGETS=""
+TWOFOUR_TARGETS="a52sxq a51 a53x a73xq m52xq r8q r9q r9q2"
+TWOFIVE_TARGETS="x1q y2q c1q c2q z3q"
 
-TARGET_SCREEN_RESOLUTION="$(printf "%d" "0x$(READ_BYTES_AT "$FW_DIR/$TARGET_FIRMWARE_PATH/system/system/media/bootsamsung.qmg" "6" "2")")"
-TARGET_SCREEN_RESOLUTION+="x"
-TARGET_SCREEN_RESOLUTION+="$(printf "%d" "0x$(READ_BYTES_AT "$FW_DIR/$TARGET_FIRMWARE_PATH/system/system/media/bootsamsung.qmg" "8" "2")")"
-
-if [ -d "$MODPATH/$TARGET_SCREEN_RESOLUTION" ]; then
-    LOG "- Adding 2024 boot animation blobs ($TARGET_SCREEN_RESOLUTION)"
-    EVAL "cp -a \"$MODPATH/$TARGET_SCREEN_RESOLUTION/\"* \"$WORK_DIR/system/system/media\""
+if echo "$TWOTHREE_TARGETS" | grep -q -w "$TARGET_CODENAME"; then
+    cp -a --preserve=all "$SRC_DIR/unica/mods/bootanim/2340x1080/"* "$WORK_DIR/system/system/media"
+elif echo "$TWOFOUR_TARGETS" | grep -q -w "$TARGET_CODENAME"; then
+    cp -a --preserve=all "$SRC_DIR/unica/mods/bootanim/2400x1080/"* "$WORK_DIR/system/system/media"
+elif echo "$TWOFIVE_TARGETS" | grep -q -w "$TARGET_CODENAME"; then
+    cp -a --preserve=all "$SRC_DIR/unica/mods/bootanim/3200x1440/"* "$WORK_DIR/system/system/media"	
 else
-    LOGW "No boot animation blobs available for $TARGET_SCREEN_RESOLUTION resolution. Skipping"
+    echo "Unknown boot animation resolution for \"$TARGET_CODENAME\""
 fi
 
-unset TARGET_FIRMWARE_PATH TARGET_SCREEN_RESOLUTION

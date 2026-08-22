@@ -1,4 +1,4 @@
 id=bootanim
-name=2024 boot animation
+name=Custom boot animation and sounds
 author=salvogiangri
-description=Replaces the boot animation which is played on device power on/off.
+description=Replaces the boot animation/sounds which is played on the device. 
