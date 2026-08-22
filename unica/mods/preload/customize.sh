@@ -1,21 +1,25 @@
-# Samsung Internet Browser
-# https://play.google.com/store/apps/details?id=com.sec.android.app.sbrowser
-LOG "- Downloading Samsung Internet app"
-DOWNLOAD_FILE "$(GET_GALAXY_STORE_DOWNLOAD_URL "com.sec.android.app.sbrowser")" \
-    "$WORK_DIR/system/system/preload/SBrowser/SBrowser.apk"
+# Add KernelSU-Next Manager APK only for QSSI target
+if [ "$TARGET_OS_SINGLE_SYSTEM_IMAGE" = "qssi" ]; then
+    KERNELSU_MANAGER_APK="https://github.com/KernelSU-Next/KernelSU-Next/releases/download/v3.3.0/KernelSU_Next_v3.3.0_33214-release.apk"
+    APK_PATH="system/preload/KernelSU-Next/com.rifsxd.ksunext-mesa==/base.apk"
 
-while IFS= read -r i; do
-    i="${i//$WORK_DIR\/system\//}"
+    LOG "- Adding KernelSU-Next APK v3.3.0 to preload apps"
+    mkdir -p "$WORK_DIR/system/$(dirname "$APK_PATH")"
+    DOWNLOAD_FILE "$KERNELSU_MANAGER_APK" "$WORK_DIR/system/$APK_PATH"
 
-    if [ -d "$WORK_DIR/system/$i" ]; then
-        SET_METADATA "system" "$i" 0 0 755 "u:object_r:system_file:s0"
-    else
-        SET_METADATA "system" "$i" 0 0 644 "u:object_r:system_file:s0"
-    fi
+    while IFS= read -r i; do
+        i="${i//$WORK_DIR\/system\//}"
 
-    if [[ "$i" == *".apk" ]] && \
-            ! grep -q "$i" "$WORK_DIR/system/system/etc/vpl_apks_count_list.txt"; then
-        LOG "- Adding \"$i\" to /system/system/etc/vpl_apks_count_list.txt"
-        EVAL "echo \"$i\" >> \"$WORK_DIR/system/system/etc/vpl_apks_count_list.txt\""
-    fi
-done <<< "$(find "$WORK_DIR/system/system/preload")"
+        if [ -d "$WORK_DIR/system/$i" ]; then
+            SET_METADATA "system" "$i" 0 0 755 "u:object_r:system_file:s0"
+        else
+            SET_METADATA "system" "$i" 0 0 644 "u:object_r:system_file:s0"
+        fi
+
+        if [[ "$i" == *".apk" ]] && \
+                ! grep -q "$i" "$WORK_DIR/system/system/etc/vpl_apks_count_list.txt"; then
+            LOG "- Adding \"$i\" to /system/system/etc/vpl_apks_count_list.txt"
+            EVAL "echo \"$i\" >> \"$WORK_DIR/system/system/etc/vpl_apks_count_list.txt\""
+        fi
+    done <<< "$(find "$WORK_DIR/system/system/preload")"
+fi
