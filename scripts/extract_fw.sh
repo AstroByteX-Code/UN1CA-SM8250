@@ -39,7 +39,7 @@ EXTRACT_AVB_BINARIES()
 
 EXTRACT_KERNEL_BINARIES()
 {
-    local FILES="boot.img dt.img dtbo.img init_boot.img vendor_boot.img recovery.img"
+    local FILES="boot.img dt.img dtbo.img init_boot.img vendor_boot.img"
 
     LOG_STEP_IN "- Extracting kernel binaries"
 
@@ -236,7 +236,7 @@ STORE_KERNEL_IMAGE_METADATA()
         echo "partition_size=$(wc -c "$FILE" | cut -d " " -f 1)" >> "$FW_DIR/${MODEL}_${CSC}/${f}_metadata.txt"
     fi
 
-    if [[ "$f" == *"boot.img" ]] || [[ "$f" == "recovery.img" ]]; then
+    if [[ "$f" == *"boot.img" ]]; then
         local INFO
         INFO="$(unpack_bootimg --boot_img "$FW_DIR/${MODEL}_${CSC}/kernel/$f" --out "$TMP_DIR" 2>&1)"
         # shellcheck disable=SC2181
