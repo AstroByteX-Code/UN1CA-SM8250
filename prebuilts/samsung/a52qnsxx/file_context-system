@@ -12,3 +12,8 @@
 /system/system_ext/lib64/fm_helium\.so u:object_r:system_lib_file:s0
 /system/system_ext/lib64/libfm-hci\.so u:object_r:system_lib_file:s0
 /system/system_ext/lib64/vendor\.qti\.hardware\.fm@1\.0\.so u:object_r:system_lib_file:s0
+/system/system_ext/app u:object_r:system_file:s0
+/system/system_ext/app/QdcmFF u:object_r:system_file:s0
+/system/system_ext/app/QdcmFF/QdcmFF\.apk u:object_r:system_file:s0
+/system/system_ext/app/com\.qualcomm\.qti\.services\.secureui u:object_r:system_file:s0
+/system/system_ext/app/com\.qualcomm\.qti\.services\.secureui/com\.qualcomm\.qti\.services\.secureui\.apk u:object_r:system_file:s0
