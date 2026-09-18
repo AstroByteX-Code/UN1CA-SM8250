@@ -165,28 +165,10 @@ if $BUILD_ROM; then
     echo -n "$(GET_WORK_DIR_HASH)" > "$WORK_DIR/.completed"
 fi
 
-if $BUILD_TARGET_FILES || $BUILD_FLASHABLE_ZIP; then
-    ZIP_FILE_NAME="${TARGET_CODENAME}_"
-    if [ "$(GET_PROP "system" "ro.unica.version")" ]; then
-        ZIP_FILE_NAME+="$(GET_PROP "system" "ro.unica.version")"
-    else
-        ZIP_FILE_NAME+="$ROM_VERSION"
-    fi
-    ZIP_FILE_NAME+="-target_files.zip"
-
-    if [ ! -f "$OUT_DIR/$ZIP_FILE_NAME" ]; then
-        LOG_STEP_IN true "Creating target-files zip"
-        "$SRC_DIR/scripts/internal/create_target_files_zip.sh" "$OUT_DIR/$ZIP_FILE_NAME" || exit 1
-        LOG_STEP_OUT
-    else
-        LOGW "File already exists: ${OUT_DIR//$SRC_DIR\//}/$ZIP_FILE_NAME"
-    fi
-
-    if $BUILD_FLASHABLE_ZIP; then
-        LOG_STEP_IN true "Creating flashable zip"
-        "$SRC_DIR/scripts/build_flashable_zip.sh" "$OUT_DIR/$ZIP_FILE_NAME" || exit 1
-        LOG_STEP_OUT
-    fi
+if $BUILD_ZIP; then
+    LOG_STEP_IN true "Creating zip"
+    "$SRC_DIR/scripts/internal/build_flashable_zip.sh" || exit 1
+    LOG_STEP_OUT
 fi
 
 exit 0
