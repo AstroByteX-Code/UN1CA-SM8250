@@ -245,9 +245,11 @@ fi
 # Disable VaultKeeper support
 # Before: [tbnz w8, #0, #0xXXXXXX]
 # After: [b #0xXXXXXX]
-LOG "- Patching \"28f7773948050037\" to \"28f777392a000014\" in apex_payload/lib64/libbluetooth_jni.so"
+LOG "- Patching \"00122a0140395f01086b00020054\" to \"00122a0140395f01086bde030014\" in apex_payload/lib64/libbluetooth_jni.so"
 HEX_PATCH "$TMP_DIR/unknown/apex_payload/lib64/libbluetooth_jni.so" \
-    "28f7773948050037" "28f777392a000014" > /dev/null
+    "00122a0140395f01086b00020054" "00122a0140395f01086bde030014" > /dev/null || \
+HEX_PATCH "$TMP_DIR/unknown/apex_payload/lib64/libbluetooth_jni.so" \
+    "2897673948050037" "289767392a000014" > /dev/null
 
 BUILD_APK_IN_APEX "$TMP_DIR/unknown/apex_payload/app/Bluetooth@BP2A.250605.031.A3/Bluetooth.apk"
 BUILD_APK_IN_APEX "$TMP_DIR/unknown/apex_payload/javalib/framework-bluetooth.jar"
