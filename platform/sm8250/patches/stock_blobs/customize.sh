@@ -69,13 +69,7 @@ ADD_TO_WORK_DIR "$TARGET_FIRMWARE" "system" "system/etc/permissions/com.sec.feat
 ADD_TO_WORK_DIR "$TARGET_FIRMWARE" "system" "system/etc/permissions/com.sec.feature.nfc_authentication_cover.xml" 0 0 644 "u:object_r:system_file:s0"
 LOG_STEP_OUT
 
-LOG_STEP_IN "- Adding r9qxxx biometric blobs"
-DELETE_FROM_WORK_DIR "vendor" "bin/hw/vendor.samsung.hardware.biometrics.face@2.0-service"
-DELETE_FROM_WORK_DIR "vendor" "etc/init/vendor.samsung.hardware.biometrics.face@2.0-service.rc"
-ADD_TO_WORK_DIR "r9qxxx" "vendor" "bin/hw/vendor.samsung.hardware.biometrics.face@3.0-service"
-ADD_TO_WORK_DIR "r9qxxx" "vendor" "etc/init/vendor.samsung.hardware.biometrics.face@3.0-service.rc"
-ADD_TO_WORK_DIR "r9qxxx" "vendor" "lib/vendor.samsung.hardware.biometrics.face@2.0.so"
-ADD_TO_WORK_DIR "r9qxxx" "vendor" "lib/vendor.samsung.hardware.biometrics.face@3.0.so"
-ADD_TO_WORK_DIR "r9qxxx" "vendor" "lib64/vendor.samsung.hardware.biometrics.face@2.0.so"
-ADD_TO_WORK_DIR "r9qxxx" "vendor" "lib64/vendor.samsung.hardware.biometrics.face@3.0.so"
+LOG_STEP_IN "- Adding HIDL face biometrics libs"
+ADD_TO_WORK_DIR "r9qxxx" "system" "system/lib/android.hardware.biometrics.face@1.0.so" 0 0 644 "u:object_r:system_lib_file:s0"
+ADD_TO_WORK_DIR "r9qxxx" "system" "system/lib/vendor.samsung.hardware.biometrics.face@2.0.so" 0 0 644 "u:object_r:system_lib_file:s0"
 LOG_STEP_OUT
