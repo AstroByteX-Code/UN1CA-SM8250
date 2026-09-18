@@ -50,10 +50,6 @@ ADD_TO_WORK_DIR "r9qxxx" "system" "system/lib/libsecuibc.so" 0 0 644 "u:object_r
 ADD_TO_WORK_DIR "r9qxxx" "system" "system/lib/libstagefright_hdcp.so" 0 0 644 "u:object_r:system_lib_file:s0"
 ADD_TO_WORK_DIR "r9qxxx" "system" "system/lib/wfd_log.so" 0 0 644 "u:object_r:system_lib_file:s0"
 
-echo "Remove DualDAR mount points"
-sed -i "/keydata/d" "$WORK_DIR/vendor/etc/fstab.qcom"
-sed -i "/keyrefuge/d" "$WORK_DIR/vendor/etc/fstab.qcom"
-
 LOG_STEP_IN "- Setting Adaptive HFR flags"
     SET_PROP "vendor" "debug.sf.show_refresh_rate_overlay_render_rate" "true"
     SET_PROP "vendor" "ro.surface_flinger.game_default_frame_rate_override" "60"
@@ -84,19 +80,4 @@ LOG_STEP_IN "- Removing configstore-1.1 service"
 DELETE_FROM_WORK_DIR "vendor" "bin/hw/android.hardware.configstore@1.1-service"
 DELETE_FROM_WORK_DIR "vendor" "etc/init/android.hardware.configstore@1.1-service.rc"
 DELETE_FROM_WORK_DIR "vendor" "etc/seccomp_policy/configstore@1.1.policy"
-LOG_STEP_OUT
-
-LOG_STEP_IN "- Adding FBE v2 support"
-sed -i '\|/dev/block/bootdevice/by-name/userdata|c\
-/dev/block/bootdevice/by-name/userdata                 /data                  f2fs    noatime,nosuid,nodev,discard,usrquota,grpquota,fsync_mode=nobarrier,reserve_root=32768,resgid=5678,inlinecrypt    latemount,wait,check,fileencryption=aes-256-xts:aes-256-cts:v2+inlinecrypt_optimized,keydirectory=/metadata/vold/metadata_encryption,sysfs_path=/sys/devices/platform/soc/1d84000.ufshc,quota,reservedsize=128M,checkpoint=fs' \
-"$WORK_DIR/vendor/etc/fstab.qcom"
-LOG_STEP_OUT
-
-LOG_STEP_IN "- Remove Samsung Encryption"
-sed -i -E \
-    's/^([^#].*?)fileencryption=[^,]*(.*)$/# &\n\1encryptable\2/' \
-    "$WORK_DIR/vendor/etc/fstab.qcom"
-sed -i -E \
-    's/^([^#].*?)forceencrypt=[^,]*(.*)$/# &\n\1encryptable\2/' \
-    "$WORK_DIR/vendor/etc/fstab.qcom"
 LOG_STEP_OUT
