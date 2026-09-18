@@ -15,6 +15,8 @@ LOG_STEP_OUT
 
 ADD_TO_WORK_DIR "a73xqxx" "vendor" "lib64/libsnaplite_native.so" 0 0 644 "u:object_r:same_process_hal_file:s0"
 
+ADD_TO_WORK_DIR "$SOURCE_FIRMWARE" "vendor" "lib/rfsa/adsp/libcamera_nn_skel.so" 0 0 644 "u:object_r:vendor_configs_file:s0"
+
 if [[ "$TARGET_CODENAME" == "x1q" || \
       "$TARGET_CODENAME" == "y2q" || \
       "$TARGET_CODENAME" == "z3q" || \
