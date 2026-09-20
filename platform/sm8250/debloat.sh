@@ -20,11 +20,6 @@ SYSTEM_DEBLOAT+="
 system/app/Rampart
 "
 
-# Google
-PRODUCT_DEBLOAT+="
-priv-app/Velvet
-"
-
 # GameDriver
 SYSTEM_DEBLOAT+="
 system/priv-app/GameDriver-SM8450
