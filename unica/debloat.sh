@@ -154,12 +154,6 @@ SYSTEM_DEBLOAT+="
 system/app/Notes40
 "
 
-# Bixby
-SYSTEM_DEBLOAT+="
-system/priv-app/Bixby
-system/app/BixbyWakeup
-"
-
 # LED Cover Service
 [ "$(GET_FLOATING_FEATURE_CONFIG "SEC_FLOATING_FEATURE_FRAMEWORK_CONFIG_NFC_LED_COVER_LEVEL")" -lt "30" ] && SYSTEM_DEBLOAT+="
 system/etc/permissions/privapp-permissions-com.sec.android.cover.ledcover.xml
@@ -240,16 +234,6 @@ system/etc/permissions/signature-permissions-com.sec.android.mimage.avatarsticke
 system/priv-app/AREmojiEditor
 system/priv-app/AvatarEmojiSticker
 system/priv-app/StickerFaceARAvatar
-"
-
-# Samsung Calendar
-SYSTEM_DEBLOAT+="
-system/app/SamsungCalendar
-"
-
-# Samsung Clock
-SYSTEM_DEBLOAT+="
-system/app/ClockPackage
 "
 
 # Samsung Free
