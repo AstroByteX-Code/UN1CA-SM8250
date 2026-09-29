@@ -11,4 +11,13 @@ else
     LOGW "No boot animation blobs available for $TARGET_SCREEN_RESOLUTION resolution. Skipping"
 fi
 
+TWOFIVE_TARGETS="x1q y2q c1q c2q z3q"
+
+
+if echo "$TWOFIVE_TARGETS" | grep -q -w "$TARGET_CODENAME"; then
+    cp -a --preserve=all "$SRC_DIR/unica/mods/bootanim/1440x3200/"* "$WORK_DIR/system/system/media"	
+else
+    echo "Unknown boot animation resolution for \"$TARGET_CODENAME\""
+fi
+
 unset TARGET_FIRMWARE_PATH TARGET_SCREEN_RESOLUTION
