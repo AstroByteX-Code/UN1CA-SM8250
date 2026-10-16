@@ -1,0 +1,4 @@
+id=sepolicy_mapping
+name=SELinux mapping fixes
+author=ssch71
+description=Drop undeclared versioned attributes from system_ext and product mapping files to prevent secilc policy compilation failures.
