@@ -65,3 +65,50 @@ DELETE_FROM_WORK_DIR "vendor" "bin/hw/android.hardware.configstore@1.1-service"
 DELETE_FROM_WORK_DIR "vendor" "etc/init/android.hardware.configstore@1.1-service.rc"
 DELETE_FROM_WORK_DIR "vendor" "etc/seccomp_policy/configstore@1.1.policy"
 LOG_STEP_OUT
+
+if [[ "$SOURCE_PLATFORM_SDK_VERSION" -ge 36 ]]; then
+    LOG_STEP_IN "- Updating Codec2 seccomp policy"
+    CODEC2_POLICY="$WORK_DIR/vendor/etc/seccomp_policy/samsung.software.media.c2-base-policy"
+    CODEC2_OLD_RULE="mremap: arg3 == 3"
+    CODEC2_NEW_RULE="mremap: arg3 == 3 || arg3 == MREMAP_MAYMOVE"
+
+    if [ ! -f "$CODEC2_POLICY" ]; then
+        LOG "  - Codec2 seccomp policy is not present; skipping"
+    else
+        if grep -q -F -x "$CODEC2_NEW_RULE" "$CODEC2_POLICY"; then
+            LOG "  - MREMAP_MAYMOVE is already allowed"
+        elif grep -q -F -x "$CODEC2_OLD_RULE" "$CODEC2_POLICY"; then
+            LOG "  - Allowing MREMAP_MAYMOVE in ${CODEC2_POLICY//$WORK_DIR\//}"
+            EVAL "sed -i 's/^mremap: arg3 == 3$/mremap: arg3 == 3 || arg3 == MREMAP_MAYMOVE/' \"$CODEC2_POLICY\""
+        elif grep -q '^mremap:' "$CODEC2_POLICY"; then
+            ABORT "Unsupported mremap rule in ${CODEC2_POLICY//$WORK_DIR\//}"
+        else
+            LOG "  - Adding the missing mremap rule to ${CODEC2_POLICY//$WORK_DIR\//}"
+            EVAL "printf '%s\\n' '$CODEC2_NEW_RULE' >> \"$CODEC2_POLICY\""
+        fi
+
+        grep -q -F -x "$CODEC2_NEW_RULE" "$CODEC2_POLICY" || \
+            ABORT "Failed to update ${CODEC2_POLICY//$WORK_DIR\//}"
+
+        for CODEC2_SYSCALL_RULE in "setsockopt: 1" "listen: 1" "bind: 1"; do
+            if ! grep -q -F -x "$CODEC2_SYSCALL_RULE" "$CODEC2_POLICY"; then
+                grep -q -F -x "prctl: 1" "$CODEC2_POLICY" || \
+                    ABORT "Unable to locate the Codec2 syscall insertion point"
+                LOG "  - Allowing ${CODEC2_SYSCALL_RULE%%:*}"
+                EVAL "sed -i '/^prctl: 1$/i$CODEC2_SYSCALL_RULE' \"$CODEC2_POLICY\""
+            fi
+        done
+
+        for CODEC2_SYSCALL_RULE in "setsockopt: 1" "listen: 1" "bind: 1"; do
+            grep -q -F -x "$CODEC2_SYSCALL_RULE" "$CODEC2_POLICY" || \
+                ABORT "Failed to add $CODEC2_SYSCALL_RULE to ${CODEC2_POLICY//$WORK_DIR\//}"
+        done
+    fi
+    unset CODEC2_POLICY CODEC2_OLD_RULE CODEC2_NEW_RULE CODEC2_SYSCALL_RULE
+    LOG_STEP_OUT
+fi
+
+LOG_STEP_IN "- Removing 24-bit deep_buffer output (fixes no media sound on speaker)"
+sed -i '/<mixPort name="deep_buffer"/,/<\/mixPort>/d' "$WORK_DIR/vendor/etc/audio_policy_configuration_base.xml"
+sed -i 's/deep_buffer,//g' "$WORK_DIR/vendor/etc/audio_policy_configuration_base.xml"
+LOG_STEP_OUT
