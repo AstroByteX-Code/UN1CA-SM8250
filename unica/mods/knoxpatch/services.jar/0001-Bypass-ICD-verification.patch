@@ -1,116 +1,97 @@
-From b948e50bdb64e5a4ab50c3ee89a0ea55071a43a6 Mon Sep 17 00:00:00 2001
-From: Salvo Giangreco <giangrecosalvo9@gmail.com>
-Date: Fri, 3 Oct 2025 16:22:12 +0200
-Subject: [PATCH] Bypass ICD verification
+From 8a48ff51917bec272f85cc6ed647d1a7d06293e2 Mon Sep 17 00:00:00 2001
+From: Devcore94 <devcore94@users.noreply.github.com>
+Date: Sat, 22 Aug 2026 05:47:06 +0200
+Subject: [PATCH] unica: mods: knoxpatch: adapt QPR2 ICD bypass
 
-UN1CA: unica/mods/deknox needs to be applied for this patch to work!
 ---
- .../DevicePolicyManagerService.smali          | 18 +--------------
- .../server/knox/dar/DarManagerService.smali   |  2 +-
- .../server/pm/UserManagerService.smali        | 18 +--------------
- .../AttestParameterSpec$Builder.smali         |  6 -----
- .../keystore/AttestParameterSpec.smali        | 10 +++-----
- .../security/keystore/AttestationUtils.smali  | 23 ++++++++-----------
- .../ssdid/SemSsdidManagerService.smali        |  2 +-
- 7 files changed, 16 insertions(+), 63 deletions(-)
+ .../DevicePolicyManagerService.smali          | 14 -----------
+ .../server/knox/dar/DarManagerService.smali   |  2 --
+ .../server/pm/UserManagerService.smali        | 16 -------------
+ .../AttestParameterSpec$Builder.smali         | 11 ---------
+ .../keystore/AttestParameterSpec.smali        |  2 --
+ .../security/keystore/AttestationUtils.smali  | 23 +++++++------------
+ .../ssdid/SemSsdidManagerService.smali        |  2 --
+ 7 files changed, 8 insertions(+), 62 deletions(-)
 
 diff --git a/smali/com/android/server/devicepolicy/DevicePolicyManagerService.smali b/smali/com/android/server/devicepolicy/DevicePolicyManagerService.smali
-index afdd74077..e199a4a2a 100644
+index ea3f275..919d794 100644
 --- a/smali/com/android/server/devicepolicy/DevicePolicyManagerService.smali
 +++ b/smali/com/android/server/devicepolicy/DevicePolicyManagerService.smali
-@@ -62042,29 +62042,13 @@
+@@ -62859,20 +62859,6 @@
  
-     invoke-direct {v13, v0, v14}, Lcom/samsung/android/security/keystore/AttestParameterSpec$Builder;-><init>(Ljava/lang/String;[B)V
+     invoke-direct {v7, v0, v8}, Lcom/samsung/android/security/keystore/AttestParameterSpec$Builder;-><init>(Ljava/lang/String;[B)V
  
--    const-class v14, Lcom/samsung/android/security/keystore/AttestParameterSpec$Builder;
+-    const-class v8, Lcom/samsung/android/security/keystore/AttestParameterSpec$Builder;
 -
--    const-string/jumbo v15, "mVerifiableIntegrity"
+-    const-string/jumbo v9, "mVerifiableIntegrity"
 -
--    invoke-virtual {v14, v15}, Ljava/lang/Class;->getDeclaredField(Ljava/lang/String;)Ljava/lang/reflect/Field;
+-    invoke-virtual {v8, v9}, Ljava/lang/Class;->getDeclaredField(Ljava/lang/String;)Ljava/lang/reflect/Field;
 -
--    move-result-object v14
+-    move-result-object v8
 -
--    invoke-virtual {v14, v9}, Ljava/lang/reflect/Field;->setAccessible(Z)V
+-    invoke-virtual {v8, v3}, Ljava/lang/reflect/Field;->setAccessible(Z)V
 -
--    sget-object v15, Ljava/lang/Boolean;->FALSE:Ljava/lang/Boolean;
+-    sget-object v9, Ljava/lang/Boolean;->FALSE:Ljava/lang/Boolean;
 -
--    invoke-virtual {v14, v13, v15}, Ljava/lang/reflect/Field;->set(Ljava/lang/Object;Ljava/lang/Object;)V
+-    invoke-virtual {v8, v7, v9}, Ljava/lang/reflect/Field;->set(Ljava/lang/Object;Ljava/lang/Object;)V
 -
-     new-instance v14, Lcom/samsung/android/security/keystore/AttestParameterSpec;
+     invoke-virtual {v7}, Lcom/samsung/android/security/keystore/AttestParameterSpec$Builder;->build()Lcom/samsung/android/security/keystore/AttestParameterSpec;
  
--    iget-boolean v15, v13, Lcom/samsung/android/security/keystore/AttestParameterSpec$Builder;->mVerifiableIntegrity:Z
--
-     iget-object v9, v13, Lcom/samsung/android/security/keystore/AttestParameterSpec$Builder;->mSpec:Landroid/security/keystore/KeyGenParameterSpec;
- 
-     iget-object v13, v13, Lcom/samsung/android/security/keystore/AttestParameterSpec$Builder;->mChallenge:[B
- 
--    invoke-direct {v14, v13, v15, v8, v9}, Lcom/samsung/android/security/keystore/AttestParameterSpec;-><init>([BZZLandroid/security/keystore/KeyGenParameterSpec;)V
-+    invoke-direct {v14, v13, v8, v9}, Lcom/samsung/android/security/keystore/AttestParameterSpec;-><init>([BZLandroid/security/keystore/KeyGenParameterSpec;)V
- 
-     invoke-virtual {v12, v14}, Lcom/samsung/android/security/keystore/AttestationUtils;->generateKeyPair(Lcom/samsung/android/security/keystore/AttestParameterSpec;)Ljava/security/KeyPair;
- 
+     move-result-object v7
 diff --git a/smali/com/android/server/knox/dar/DarManagerService.smali b/smali/com/android/server/knox/dar/DarManagerService.smali
-index b2cb8b638..5a9488047 100644
+index 821b28b..5599599 100644
 --- a/smali/com/android/server/knox/dar/DarManagerService.smali
 +++ b/smali/com/android/server/knox/dar/DarManagerService.smali
-@@ -1657,7 +1657,7 @@
+@@ -1798,8 +1798,6 @@
  
-     new-instance v8, Lcom/samsung/android/security/keystore/AttestParameterSpec;
+     iput-object v0, v10, Lcom/samsung/android/security/keystore/AttestParameterSpec;->mChallenge:[B
  
--    invoke-direct {v8, v6, v2, v1, v7}, Lcom/samsung/android/security/keystore/AttestParameterSpec;-><init>([BZZLandroid/security/keystore/KeyGenParameterSpec;)V
-+    invoke-direct {v8, v6, v1, v7}, Lcom/samsung/android/security/keystore/AttestParameterSpec;-><init>([BZLandroid/security/keystore/KeyGenParameterSpec;)V
+-    iput-boolean v4, v10, Lcom/samsung/android/security/keystore/AttestParameterSpec;->mVerifiableIntegrity:Z
+-
+     iput-boolean v3, v10, Lcom/samsung/android/security/keystore/AttestParameterSpec;->mSAKUidRequired:Z
  
-     invoke-virtual {v5, v8}, Lcom/samsung/android/security/keystore/AttestationUtils;->generateKeyPair(Lcom/samsung/android/security/keystore/AttestParameterSpec;)Ljava/security/KeyPair;
- 
+     iput-object v9, v10, Lcom/samsung/android/security/keystore/AttestParameterSpec;->mSpec:Landroid/security/keystore/KeyGenParameterSpec;
 diff --git a/smali_classes2/com/android/server/pm/UserManagerService.smali b/smali_classes2/com/android/server/pm/UserManagerService.smali
-index 0778d27b8..9a3002cfc 100644
+index 226e3e3..d49fe05 100644
 --- a/smali_classes2/com/android/server/pm/UserManagerService.smali
 +++ b/smali_classes2/com/android/server/pm/UserManagerService.smali
-@@ -6520,29 +6520,13 @@
+@@ -7017,22 +7017,6 @@
  
-     invoke-direct {v5, v0, v6}, Lcom/samsung/android/security/keystore/AttestParameterSpec$Builder;-><init>(Ljava/lang/String;[B)V
+     invoke-direct {v8, v0, v11}, Lcom/samsung/android/security/keystore/AttestParameterSpec$Builder;-><init>(Ljava/lang/String;[B)V
  
--    const-class v6, Lcom/samsung/android/security/keystore/AttestParameterSpec$Builder;
+-    const-class v11, Lcom/samsung/android/security/keystore/AttestParameterSpec$Builder;
 -
--    const-string/jumbo v8, "mVerifiableIntegrity"
+-    const-string/jumbo v14, "mVerifiableIntegrity"
 -
--    invoke-virtual {v6, v8}, Ljava/lang/Class;->getDeclaredField(Ljava/lang/String;)Ljava/lang/reflect/Field;
+-    invoke-virtual {v11, v14}, Ljava/lang/Class;->getDeclaredField(Ljava/lang/String;)Ljava/lang/reflect/Field;
 -
--    move-result-object v6
+-    move-result-object v11
 -
--    invoke-virtual {v6, v7}, Ljava/lang/reflect/Field;->setAccessible(Z)V
+-    const/4 v14, 0x1
 -
--    sget-object v8, Ljava/lang/Boolean;->FALSE:Ljava/lang/Boolean;
+-    invoke-virtual {v11, v14}, Ljava/lang/reflect/Field;->setAccessible(Z)V
 -
--    invoke-virtual {v6, v5, v8}, Ljava/lang/reflect/Field;->set(Ljava/lang/Object;Ljava/lang/Object;)V
+-    sget-object v14, Ljava/lang/Boolean;->FALSE:Ljava/lang/Boolean;
 -
-     new-instance v6, Lcom/samsung/android/security/keystore/AttestParameterSpec;
+-    invoke-virtual {v11, v8, v14}, Ljava/lang/reflect/Field;->set(Ljava/lang/Object;Ljava/lang/Object;)V
+-
+     invoke-virtual {v8}, Lcom/samsung/android/security/keystore/AttestParameterSpec$Builder;->build()Lcom/samsung/android/security/keystore/AttestParameterSpec;
  
--    iget-boolean v8, v5, Lcom/samsung/android/security/keystore/AttestParameterSpec$Builder;->mVerifiableIntegrity:Z
--
-     iget-object v9, v5, Lcom/samsung/android/security/keystore/AttestParameterSpec$Builder;->mSpec:Landroid/security/keystore/KeyGenParameterSpec;
- 
-     iget-object v5, v5, Lcom/samsung/android/security/keystore/AttestParameterSpec$Builder;->mChallenge:[B
- 
--    invoke-direct {v6, v5, v8, v3, v9}, Lcom/samsung/android/security/keystore/AttestParameterSpec;-><init>([BZZLandroid/security/keystore/KeyGenParameterSpec;)V
-+    invoke-direct {v6, v5, v3, v9}, Lcom/samsung/android/security/keystore/AttestParameterSpec;-><init>([BZLandroid/security/keystore/KeyGenParameterSpec;)V
- 
-     invoke-virtual {v4, v6}, Lcom/samsung/android/security/keystore/AttestationUtils;->generateKeyPair(Lcom/samsung/android/security/keystore/AttestParameterSpec;)Ljava/security/KeyPair;
- 
+     move-result-object v8
 diff --git a/smali_classes2/com/samsung/android/security/keystore/AttestParameterSpec$Builder.smali b/smali_classes2/com/samsung/android/security/keystore/AttestParameterSpec$Builder.smali
-index 329c4e288..5f1c67bed 100644
+index 141f436..aed1ae9 100644
 --- a/smali_classes2/com/samsung/android/security/keystore/AttestParameterSpec$Builder.smali
 +++ b/smali_classes2/com/samsung/android/security/keystore/AttestParameterSpec$Builder.smali
-@@ -8,8 +8,6 @@
+@@ -8,19 +8,12 @@
  
  .field public final mSpec:Landroid/security/keystore/KeyGenParameterSpec;
  
 -.field public mVerifiableIntegrity:Z
 -
- 
+-
  # direct methods
  .method public constructor <init>(Ljava/lang/String;[B)V
-@@ -17,10 +15,6 @@
+     .locals 8
  
      invoke-direct {p0}, Ljava/lang/Object;-><init>()V
  
@@ -121,49 +102,44 @@ index 329c4e288..5f1c67bed 100644
      invoke-virtual {p1}, Ljava/lang/String;->isEmpty()Z
  
      move-result v0
+@@ -91,8 +84,6 @@
+ 
+     new-instance v0, Lcom/samsung/android/security/keystore/AttestParameterSpec;
+ 
+-    iget-boolean v1, p0, Lcom/samsung/android/security/keystore/AttestParameterSpec$Builder;->mVerifiableIntegrity:Z
+-
+     iget-object v2, p0, Lcom/samsung/android/security/keystore/AttestParameterSpec$Builder;->mSpec:Landroid/security/keystore/KeyGenParameterSpec;
+ 
+     invoke-direct {v0}, Ljava/lang/Object;-><init>()V
+@@ -131,8 +122,6 @@
+     :goto_1
+     iput-object p0, v0, Lcom/samsung/android/security/keystore/AttestParameterSpec;->mChallenge:[B
+ 
+-    iput-boolean v1, v0, Lcom/samsung/android/security/keystore/AttestParameterSpec;->mVerifiableIntegrity:Z
+-
+     const/4 p0, 0x0
+ 
+     iput-boolean p0, v0, Lcom/samsung/android/security/keystore/AttestParameterSpec;->mSAKUidRequired:Z
 diff --git a/smali_classes2/com/samsung/android/security/keystore/AttestParameterSpec.smali b/smali_classes2/com/samsung/android/security/keystore/AttestParameterSpec.smali
-index 813e0ea36..61c37d31b 100644
+index 6a2ddea..3717df7 100644
 --- a/smali_classes2/com/samsung/android/security/keystore/AttestParameterSpec.smali
 +++ b/smali_classes2/com/samsung/android/security/keystore/AttestParameterSpec.smali
-@@ -12,11 +12,9 @@
+@@ -11,5 +11,3 @@
+ .field public mSAKUidRequired:Z
  
- .field public final mSpec:Landroid/security/keystore/KeyGenParameterSpec;
- 
--.field public final mVerifiableIntegrity:Z
+ .field public mSpec:Landroid/security/keystore/KeyGenParameterSpec;
 -
- 
- # direct methods
--.method public constructor <init>([BZZLandroid/security/keystore/KeyGenParameterSpec;)V
-+.method public constructor <init>([BZLandroid/security/keystore/KeyGenParameterSpec;)V
-     .locals 2
- 
-     invoke-direct {p0}, Ljava/lang/Object;-><init>()V
-@@ -53,11 +51,9 @@
-     :goto_1
-     iput-object p1, p0, Lcom/samsung/android/security/keystore/AttestParameterSpec;->mChallenge:[B
- 
--    iput-boolean p2, p0, Lcom/samsung/android/security/keystore/AttestParameterSpec;->mVerifiableIntegrity:Z
--
--    iput-boolean p3, p0, Lcom/samsung/android/security/keystore/AttestParameterSpec;->mSAKUidRequired:Z
-+    iput-boolean p2, p0, Lcom/samsung/android/security/keystore/AttestParameterSpec;->mSAKUidRequired:Z
- 
--    iput-object p4, p0, Lcom/samsung/android/security/keystore/AttestParameterSpec;->mSpec:Landroid/security/keystore/KeyGenParameterSpec;
-+    iput-object p3, p0, Lcom/samsung/android/security/keystore/AttestParameterSpec;->mSpec:Landroid/security/keystore/KeyGenParameterSpec;
- 
-     return-void
- .end method
+-.field public mVerifiableIntegrity:Z
 diff --git a/smali_classes2/com/samsung/android/security/keystore/AttestationUtils.smali b/smali_classes2/com/samsung/android/security/keystore/AttestationUtils.smali
-index 5cd0064f2..3f92cc488 100644
+index dfc3eac..c921bb3 100644
 --- a/smali_classes2/com/samsung/android/security/keystore/AttestationUtils.smali
 +++ b/smali_classes2/com/samsung/android/security/keystore/AttestationUtils.smali
-@@ -326,11 +326,11 @@
+@@ -328,9 +328,9 @@
  
-     move-result v0
+     move-result v1
  
--    if-nez v0, :cond_d
-+    if-nez v0, :cond_c
- 
-     iget-object v0, p1, Lcom/samsung/android/security/keystore/AttestParameterSpec;->mChallenge:[B
+-    if-nez v1, :cond_d
++    if-nez v1, :cond_c
  
 -    if-eqz v0, :cond_c
 +    if-eqz v0, :cond_b
@@ -241,28 +217,28 @@ index 5cd0064f2..3f92cc488 100644
      new-instance p0, Ljava/lang/NullPointerException;
  
      const-string/jumbo p1, "constructAttestationArguments : alias == null"
-@@ -889,7 +884,7 @@
+@@ -915,8 +910,6 @@
  
-     const/4 v1, 0x0
+     const/4 p2, 0x0
  
--    invoke-direct {v0, p2, v1, v1, p1}, Lcom/samsung/android/security/keystore/AttestParameterSpec;-><init>([BZZLandroid/security/keystore/KeyGenParameterSpec;)V
-+    invoke-direct {v0, p2, v1, p1}, Lcom/samsung/android/security/keystore/AttestParameterSpec;-><init>([BZLandroid/security/keystore/KeyGenParameterSpec;)V
+-    iput-boolean p2, v0, Lcom/samsung/android/security/keystore/AttestParameterSpec;->mVerifiableIntegrity:Z
+-
+     iput-boolean p2, v0, Lcom/samsung/android/security/keystore/AttestParameterSpec;->mSAKUidRequired:Z
  
-     invoke-virtual {p0, v0}, Lcom/samsung/android/security/keystore/AttestationUtils;->generateKeyPair(Lcom/samsung/android/security/keystore/AttestParameterSpec;)Ljava/security/KeyPair;
- 
+     iput-object p1, v0, Lcom/samsung/android/security/keystore/AttestParameterSpec;->mSpec:Landroid/security/keystore/KeyGenParameterSpec;
 diff --git a/smali_classes2/com/samsung/android/ssdid/SemSsdidManagerService.smali b/smali_classes2/com/samsung/android/ssdid/SemSsdidManagerService.smali
-index 8a776e723..106ad21d1 100644
+index 56c024b..6bc1cee 100644
 --- a/smali_classes2/com/samsung/android/ssdid/SemSsdidManagerService.smali
 +++ b/smali_classes2/com/samsung/android/ssdid/SemSsdidManagerService.smali
-@@ -197,7 +197,7 @@
+@@ -201,8 +201,6 @@
  
-     new-instance v11, Lcom/samsung/android/security/keystore/AttestParameterSpec;
+     iput-object v0, v12, Lcom/samsung/android/security/keystore/AttestParameterSpec;->mChallenge:[B
  
--    invoke-direct {v11, v0, v7, v12, v8}, Lcom/samsung/android/security/keystore/AttestParameterSpec;-><init>([BZZLandroid/security/keystore/KeyGenParameterSpec;)V
-+    invoke-direct {v11, v0, v12, v8}, Lcom/samsung/android/security/keystore/AttestParameterSpec;-><init>([BZLandroid/security/keystore/KeyGenParameterSpec;)V
+-    iput-boolean v8, v12, Lcom/samsung/android/security/keystore/AttestParameterSpec;->mVerifiableIntegrity:Z
+-
+     iput-boolean v13, v12, Lcom/samsung/android/security/keystore/AttestParameterSpec;->mSAKUidRequired:Z
  
-     invoke-virtual {v6, v11}, Lcom/samsung/android/security/keystore/AttestationUtils;->generateKeyPair(Lcom/samsung/android/security/keystore/AttestParameterSpec;)Ljava/security/KeyPair;
- 
+     iput-object v7, v12, Lcom/samsung/android/security/keystore/AttestParameterSpec;->mSpec:Landroid/security/keystore/KeyGenParameterSpec;
 -- 
-2.51.1
+2.53.0
 
