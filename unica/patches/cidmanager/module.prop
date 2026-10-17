@@ -1,0 +1,4 @@
+id=cidmanager
+name=CIDManager compatibility
+author=Ats0c_
+description=Keeps CIDManager with a coherent target-selected Bluetooth/VaultKeeper stack, or isolates the target HIDL 2.0 bridge when the source still requires AIDL.
