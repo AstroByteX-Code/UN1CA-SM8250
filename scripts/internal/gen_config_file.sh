@@ -385,11 +385,6 @@ fi
 #       - `cosName` value in the `com.samsung.android.service.SemService.SemServiceManager` class inside `framework.jar`
 #       - `mEseCosName` value in the `com.android.se.internal.UtilExtension` class inside `SecureElement.apk`
 #
-#   [SOURCE/TARGET]_SECURITY_SUPPORT_ESEK
-#     Boolean which describes whether the device supports eSE Key (eSEK).
-#     It can be checked in the following ways:
-#       - `supportEsek` in the `com.android.server.SemService` class inside `framework.jar` is set to true
-#
 #   [SOURCE/TARGET]_WLAN_CONFIG_CONNECTION_PERSONALIZATION
 #     Integer containing the device Connection Personalizer feature flag.
 #
@@ -407,12 +402,6 @@ fi
 #
 #   [SOURCE/TARGET]_WLAN_CONFIG_L1SS_DISABLE_THRESHOLD
 #     Integer containing the device L1ss boost threshold.
-#
-#   [SOURCE/TARGET]_WLAN_CONFIG_SEPARATE_ANT_BACKOFF
-#     String containing the device Wi-Fi body SAR backoff config for separate antennas.
-#
-#   [SOURCE/TARGET]_WLAN_CONFIG_SINGLE_ANT_BACKOFF
-#     String containing the device Wi-Fi body SAR backoff config for single antenna.
 #
 #   [SOURCE/TARGET]_WLAN_SUPPORT_80211AX
 #     Boolean which describes whether the device supports the Wi-Fi 6 standard.
@@ -473,6 +462,7 @@ fi
     GET_BUILD_VAR "ROM_VERSION"
     GET_BUILD_VAR "ROM_BUILD_TIMESTAMP" "$(date +%s)"
     GET_BUILD_VAR "SOURCE_FIRMWARE"
+    echo "SOURCE_FIRMWARE_VERSION=\"${SOURCE_FIRMWARE_VERSION:-}\""
     if [ "${#SOURCE_EXTRA_FIRMWARES[@]}" -ge 1 ]; then
         echo "SOURCE_EXTRA_FIRMWARES=\"$(IFS=":"; printf '%s' "${SOURCE_EXTRA_FIRMWARES[*]}")\""
     else
@@ -481,6 +471,10 @@ fi
     GET_BUILD_VAR "SOURCE_PLATFORM_SDK_VERSION"
     GET_BUILD_VAR "SOURCE_PRODUCT_SHIPPING_API_LEVEL"
     GET_BUILD_VAR "SOURCE_BOARD_API_LEVEL"
+    # When the source device already implements the target display stack,
+    # keep its resolution/HFR framework and floating-feature values intact.
+    # This is opt-in so existing ports retain the historical behaviour.
+    GET_BUILD_VAR "SOURCE_USE_NATIVE_DISPLAY_STACK" "false"
     GET_BUILD_VAR "TARGET_NAME"
     GET_BUILD_VAR "TARGET_CODENAME"
     GET_BUILD_VAR "TARGET_PLATFORM" "none"
@@ -490,6 +484,7 @@ fi
         echo "TARGET_ASSERT_MODEL=\"\""
     fi
     GET_BUILD_VAR "TARGET_FIRMWARE"
+    echo "TARGET_FIRMWARE_VERSION=\"${TARGET_FIRMWARE_VERSION:-}\""
     if [ "${#TARGET_EXTRA_FIRMWARES[@]}" -ge 1 ]; then
         echo "TARGET_EXTRA_FIRMWARES=\"$(IFS=":"; printf '%s' "${TARGET_EXTRA_FIRMWARES[*]}")\""
     else
@@ -590,8 +585,6 @@ fi
     GET_BUILD_VAR "TARGET_SECURITY_CONFIG_ESE_CHIP_VENDOR" "none"
     GET_BUILD_VAR "SOURCE_SECURITY_CONFIG_ESE_COS_NAME" "none"
     GET_BUILD_VAR "TARGET_SECURITY_CONFIG_ESE_COS_NAME" "none"
-    GET_BUILD_VAR "SOURCE_SECURITY_SUPPORT_ESEK" "$(test "$SOURCE_SECURITY_CONFIG_ESE_COS_NAME" && echo "" || echo "false")"
-    GET_BUILD_VAR "TARGET_SECURITY_SUPPORT_ESEK" "$(test "$TARGET_SECURITY_CONFIG_ESE_COS_NAME" && echo "" || echo "false")"
     GET_BUILD_VAR "SOURCE_WLAN_CONFIG_CONNECTION_PERSONALIZATION"
     GET_BUILD_VAR "TARGET_WLAN_CONFIG_CONNECTION_PERSONALIZATION"
     GET_BUILD_VAR "SOURCE_WLAN_CONFIG_CPU_CSTATE_DISABLE_THRESHOLD"
@@ -604,10 +597,6 @@ fi
     GET_BUILD_VAR "TARGET_WLAN_CONFIG_DYNAMIC_SWITCH"
     GET_BUILD_VAR "SOURCE_WLAN_CONFIG_L1SS_DISABLE_THRESHOLD"
     GET_BUILD_VAR "TARGET_WLAN_CONFIG_L1SS_DISABLE_THRESHOLD"
-    GET_BUILD_VAR "SOURCE_WLAN_CONFIG_SEPARATE_ANT_BACKOFF" "none"
-    GET_BUILD_VAR "TARGET_WLAN_CONFIG_SEPARATE_ANT_BACKOFF" "none"
-    GET_BUILD_VAR "SOURCE_WLAN_CONFIG_SINGLE_ANT_BACKOFF" "none"
-    GET_BUILD_VAR "TARGET_WLAN_CONFIG_SINGLE_ANT_BACKOFF" "none"
     GET_BUILD_VAR "SOURCE_WLAN_SUPPORT_80211AX"
     GET_BUILD_VAR "TARGET_WLAN_SUPPORT_80211AX"
     GET_BUILD_VAR "SOURCE_WLAN_SUPPORT_80211AX_6GHZ"
