@@ -44,6 +44,17 @@ APPLY_PATCH()
     DECODE_APK "$PARTITION" "$FILE" || return 1
 
     LOG "- Applying \"$(grep "^Subject:" "$PATCH" | sed "s/.*PATCH] //")\" to /$PARTITION/$FILE"
+
+    # A decoded APK/JAR cache may already contain this patch from a previous
+    # build. Only treat it as applied when the complete patch can be cleanly
+    # reversed; incompatible or partially applied patches must still fail.
+    if LC_ALL=C git apply \
+        --directory="$APKTOOL_DIR/$PARTITION/${FILE//system\//}" \
+        --reverse --check --unsafe-paths "$PATCH" > /dev/null 2>&1; then
+        LOG "  - Patch is already applied; skipping"
+        return 0
+    fi
+
     EVAL "LC_ALL=C git apply --directory=\"$APKTOOL_DIR/$PARTITION/${FILE//system\//}\" --verbose --unsafe-paths \"$PATCH\"" || return 1
 }
 
@@ -72,7 +83,6 @@ GET_GALAXY_STORE_DOWNLOAD_URL()
     local DEVICES
     local OS
     local ONEUI
-    local SYSTEMID
     local PROTOCOL
 
     # Galaxy S25 Ultra EUR_OPENX
@@ -82,7 +92,6 @@ GET_GALAXY_STORE_DOWNLOAD_URL()
 
     OS="$(GET_PROP "system" "ro.build.version.sdk")"
     ONEUI="$(GET_PROP "system" "ro.build.version.oneui")"
-    SYSTEMID="$(date "+%s")"
 
     if [ ! "$OS" ]; then
         # Fallback to Android 16
@@ -95,7 +104,7 @@ GET_GALAXY_STORE_DOWNLOAD_URL()
 
     PROTOCOL+="<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\" ?>"
     PROTOCOL+="<SamsungProtocol networkType=\"0\" openApiVersion=\"$OS\" deviceModel=\"DEVICE\""
-    PROTOCOL+=" mcc=\"262\" mnc=\"01\" csc=\"EUX\" version=\"7.7\" systemId=\"$SYSTEMID\""
+    PROTOCOL+=" mcc=\"262\" mnc=\"01\" csc=\"EUX\" version=\"7.7\""
     PROTOCOL+=" deviceFeature=\"locale=en_GB||abi32=armeabi-v7a:armeabi||abi64=arm64-v8a||oneUiVersion=$ONEUI\">"
     PROTOCOL+="<request id=\"2303\" numParam=\"2\">"
     PROTOCOL+="<param name=\"stduk\">0</param>"
@@ -109,7 +118,7 @@ GET_GALAXY_STORE_DOWNLOAD_URL()
         if [[ "$PACKAGE" =~ ^[+-]?[0-9]+$ ]]; then
             OUT="$PACKAGE"
         else
-            OUT="$(curl -L -s "https://vas.samsungapps.com/stub/stubUpdateCheck.as?appId=$PACKAGE&versionCode=0&deviceId=$i&mcc=262&mnc=01&csc=EUX&sdkVer=$OS&oneUiVersion=$ONEUI&systemId=$SYSTEMID")"
+            OUT="$(curl -L -s "https://vas.samsungapps.com/stub/stubUpdateCheck.as?appId=$PACKAGE&versionCode=0&deviceId=$i&mcc=262&mnc=01&csc=EUX&sdkVer=$OS&oneUiVersion=$ONEUI&systemId=0")"
             OUT="$(grep -o -P "(?<=<productId>)[^<]+" <<< "$OUT")"
             if [ ! "$OUT" ]; then
                 continue
@@ -213,13 +222,21 @@ SET_FLOATING_FEATURE_CONFIG()
         return 1
     fi
 
-    if grep -q "<$CONFIG>" "$FILE"; then
+    # Match the complete XML tag. A substring match confuses entries such as
+    # CAMERA_SUPPORT_AI_HIGH_RESOLUTION with
+    # CAMERA_SUPPORT_AI_HIGH_RESOLUTION_DRAFT_DOWNSCALE.
+    if grep -q "<${CONFIG}>" "$FILE"; then
         if [[ "$VALUE" == "-d" ]] || [[ "$VALUE" == "--delete" ]]; then
             LOG "- Deleting \"$CONFIG\" config in /system/system/etc/floating_feature.xml"
             sed -i "/<$CONFIG>/d" "$FILE"
         else
             LOG "- Replacing \"$CONFIG\" config with \"$VALUE\" in /system/system/etc/floating_feature.xml"
-            sed -i "$(sed -n "/<${CONFIG}>/=" "$FILE") c\ \ \ \ <${CONFIG}>${VALUE}</${CONFIG}>" "$FILE"
+            # Delete every existing copy first. The old line-number based sed
+            # expression became invalid as soon as a dirty/repeated build had
+            # duplicated an entry, multiplying it until floating_feature.xml
+            # was almost entirely replaced by a single feature.
+            sed -i "/<${CONFIG}>/d" "$FILE"
+            sed -i "/<\/SecFloatingFeatureSet>/i\ \ \ \ <${CONFIG}>${VALUE}</${CONFIG}>" "$FILE"
         fi
     elif [[ "$VALUE" != "-d" ]] && [[ "$VALUE" != "--delete" ]]; then
         LOG "- Adding \"$CONFIG\" config with \"$VALUE\" in /system/system/etc/floating_feature.xml"

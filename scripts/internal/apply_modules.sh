@@ -125,15 +125,30 @@ READ_AND_APPLY_PROPS()
 }
 #]
 
-if [ "$#" != "1" ]; then
-    echo "Usage: apply_modules <folder>" >&2
+if [ "$#" -lt "1" ] || [ "$#" -gt "2" ]; then
+    echo "Usage: apply_modules <folder> [first module]" >&2
     exit 1
 elif [ ! -d "$1" ]; then
     LOGE "Folder not found: ${1//$SRC_DIR\//}"
     exit 1
 fi
 
+FIRST_MODULE=""
+if [ "$#" == "2" ]; then
+    if [[ "$2" == */* ]] || [[ "$2" == "." ]] || [[ "$2" == ".." ]]; then
+        LOGE "Invalid first module name: $2"
+        exit 1
+    fi
+    FIRST_MODULE="$1/$2"
+    if [ ! -d "$FIRST_MODULE" ]; then
+        LOGE "Folder not found: ${FIRST_MODULE//$SRC_DIR\//}"
+        exit 1
+    fi
+    APPLY_MODULE "$FIRST_MODULE"
+fi
+
 while IFS= read -r f; do
+    [ "$f" == "$FIRST_MODULE" ] && continue
     APPLY_MODULE "$f"
 done < <(find "$1" -mindepth 1 -maxdepth 1 -type d | LC_ALL=C sort)
 
