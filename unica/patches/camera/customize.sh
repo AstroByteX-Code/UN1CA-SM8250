@@ -349,10 +349,10 @@ fi
 while IFS= read -r f; do
     HEX_PATCH "$f" "726f2e70726f647563742e6d6f64656c00" "726f2e626f6f742e656d2e6d6f64656c00"
 done < <(grep -r -w -l "ro.product.model" "$WORK_DIR/vendor" | grep "camera")
-HEX_PATCH "$WORK_DIR/system/system/lib/libstagefright.so" \
-    "726f2e70726f647563742e6d6f64656c00" "726f2e626f6f742e656d2e6d6f64656c00"
 HEX_PATCH "$WORK_DIR/system/system/lib64/libstagefright.so" \
     "726f2e70726f647563742e6d6f64656c00" "726f2e626f6f742e656d2e6d6f64656c00"
+HEX_PATCH "$WORK_DIR/system/system/lib64/libstagefright.so" \
+    "02408052e30315aae41f8052" "c21f8052e30315aae41f8052"        
 
 # Fix object capture
 if [[ "$TARGET_OS_SINGLE_SYSTEM_IMAGE" == "essi" ]]; then
