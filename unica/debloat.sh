@@ -65,12 +65,6 @@ SYSTEM_DEBLOAT+="
 system/app/MAPSAgent
 "
 
-# AppUpdateCenter
-SYSTEM_DEBLOAT+="
-system/etc/permissions/privapp-permissions-com.samsung.android.app.updatecenter.xml
-system/priv-app/AppUpdateCenter
-"
-
 # BCService
 SYSTEM_DEBLOAT+="
 system/etc/permissions/privapp-permissions-com.sec.bcservice.xml
@@ -102,11 +96,6 @@ PRODUCT_DEBLOAT+="
 app/AssistantShell
 "
 
-# Google Chrome
-PRODUCT_DEBLOAT+="
-app/Chrome
-"
-
 # Google Duo
 PRODUCT_DEBLOAT+="
 app/DuoStub
@@ -136,8 +125,46 @@ system/priv-app/FacAtFunction
 system/priv-app/FactoryTestProvider
 "
 
+# Spen
+SYSTEM_DEBLOAT+="
+system/app/AirGlance
+system/app/LiveDrawing
+system/etc/default-permissions/default-permissions-com.samsung.android.service.aircommand.xml
+system/etc/permissions/privapp-permissions-com.samsung.android.app.readingglass.xml
+system/etc/permissions/privapp-permissions-com.samsung.android.service.aircommand.xml
+system/etc/permissions/privapp-permissions-com.samsung.android.service.airviewdictionary.xml
+system/etc/public.libraries-smps.samsung.txt
+system/etc/sysconfig/airviewdictionaryservice.xml
+system/lib64/libsmpsft.smps.samsung.so
+system/media/audio/pensounds
+system/priv-app/AirCommand
+system/priv-app/AirReadingGlass
+system/priv-app/SmartEye
+"
+
 # Language packs
 SYSTEM_DEBLOAT+="$(find "$WORK_DIR/system" -type d -name "*TTSVoice*" | sed "s|$WORK_DIR/system/||g")"
+
+# Samsung Kids
+SYSTEM_DEBLOAT+="
+system/etc/permissions/signature-permissions-com.sec.android.app.kidshome.xml
+system/app/KidsHome_Installer
+"
+
+# Bixby
+SYSTEM_DEBLOAT+="
+system/priv-app/Bixby
+system/app/BixbyWakeup
+system/etc/preferred-apps/com.samsung.android.bixby.agent.xml
+system/etc/permissions/privapp-permissions-com.samsung.android.bixby.agent.xml
+system/etc/permissions/privapp-permissions-com.samsung.android.bixby.wakeup.xml
+system/etc/permissions/signature-permissions-com.samsung.android.bixby.agent.xml
+"
+
+#AREmoji
+SYSTEM_DEBLOAT+="
+system/priv-app/AREmoji
+"
 
 # LED Cover Service
 [ "$(GET_FLOATING_FEATURE_CONFIG "SEC_FLOATING_FEATURE_FRAMEWORK_CONFIG_NFC_LED_COVER_LEVEL")" -lt "30" ] && SYSTEM_DEBLOAT+="
@@ -152,12 +179,6 @@ system/priv-app/YourPhone_P1_5
 "
 
 ADD_TO_WORK_DIR "gta9pxxx" "system" "system/priv-app/YourPhone_Stub/YourPhone_Stub.apk" 0 0 644 "u:object_r:system_file:s0"
-
-# Live Transcribe
-SYSTEM_DEBLOAT+="
-system/app/LiveTranscribe
-system/etc/sysconfig/feature-a11y-preload.xml
-"
 
 # Meta
 SYSTEM_DEBLOAT+="
@@ -205,32 +226,25 @@ system/priv-app/AREmojiEditor
 system/priv-app/AvatarEmojiSticker
 "
 
-# Samsung Calendar
-SYSTEM_DEBLOAT+="
-system/app/SamsungCalendar
-"
-
-# Samsung Clock
-SYSTEM_DEBLOAT+="
-system/app/ClockPackage
-"
-
 # Samsung Free
 SYSTEM_DEBLOAT+="
 system/app/MinusOnePage
 "
 
 # Samsung Language Core
-SYSTEM_DEBLOAT+="
-system/etc/permissions/signature-permissions-com.samsung.android.offline.languagemodel.xml
-system/priv-app/OfflineLanguageModel_stub
+#SYSTEM_DEBLOAT+="
+#system/etc/permissions/signature-permissions-com.samsung.android.offline.languagemodel.xml
+#system/priv-app/OfflineLanguageModel_stub
+#"
+
+# Google Messages
+PRODUCT_DEBLOAT+="
+priv-app/Messages
 "
 
-# Samsung Messages
+# App recomendations
 SYSTEM_DEBLOAT+="
-system/etc/default-permissions/default-permissions-com.samsung.android.messaging.xml
-system/etc/permissions/privapp-permissions-com.samsung.android.messaging.xml
-system/priv-app/SamsungMessages
+system/priv-app/OMCAgent5
 "
 
 # Samsung Pass
@@ -295,6 +309,11 @@ system/etc/sysconfig/settingshelper.xml
 system/priv-app/SHClient
 "
 
+#BookmarkProvider
+SYSTEM_DEBLOAT+="
+system/app/VoiceAccess
+"
+
 # Smart Touch Call
 SYSTEM_DEBLOAT+="
 system/etc/default-permissions/default-permissions-com.samsung.android.visualars.xml
@@ -335,4 +354,9 @@ system/etc/sysconfig/feature-a11y-preload-voacc.xml
 # YouTube
 PRODUCT_DEBLOAT+="
 app/YouTube
+"
+
+# Google Chrome
+PRODUCT_DEBLOAT+="
+app/Chrome64
 "
