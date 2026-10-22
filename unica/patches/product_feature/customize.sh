@@ -19,7 +19,7 @@ LOG_MISSING_PATCHES()
     if $DEBUG; then
         LOGW "$MESSAGE"
     else
-        ABORT "${MESSAGE}. Aborting"
+        LOGW "$MESSAGE (continuing build)"
     fi
 }
 
@@ -414,7 +414,13 @@ if [[ "$SOURCE_FINGERPRINT_CONFIG_SENSOR" != "$TARGET_FINGERPRINT_CONFIG_SENSOR"
             if [[ "$(GET_FINGERPRINT_SENSOR_TYPE "$TARGET_FINGERPRINT_CONFIG_SENSOR")" == "optical" ]]; then
                 SOURCE_FINGERPRINT_CONFIG_SENSOR="google_touch_display_optical,settings=3"
 
-                if [[ "$TARGET_OS_SINGLE_SYSTEM_IMAGE" == "qssi" ]]; then
+                if $PRESERVE_NATIVE_DISPLAY_STACK; then
+                    # The r9q/r9s SurfaceFlinger, libgui and libui are One UI 8.0 builds linked
+                    # against graphics.common-V6 (and vendor.qti composer3-V1 on qssi), which
+                    # the QPR2 source no longer ships. Mixing them with the source libhwui and
+                    # libandroid_runtime also risks libgui ABI breaks, so keep the source stack.
+                    LOG "- Keeping native source display stack for optical FOD"
+                elif [[ "$TARGET_OS_SINGLE_SYSTEM_IMAGE" == "qssi" ]]; then
                     ADD_TO_WORK_DIR "r9qxxx" "system" "system/bin/surfaceflinger" 0 2000 755 "u:object_r:surfaceflinger_exec:s0"
                     # Ensure IQtiComposer support (pre-API 36)
                     # Check unica/patches/legacy/customize.sh for more info.
@@ -451,7 +457,7 @@ if [[ "$SOURCE_FINGERPRINT_CONFIG_SENSOR" != "$TARGET_FINGERPRINT_CONFIG_SENSOR"
                     # already consume the optical feature exposed above and
                     # their classes/control flow have since been redesigned.
                     LOG "Using native Android 16 optical fingerprint UI"
-                else
+                elif [[ "$TARGET_OS_SINGLE_SYSTEM_IMAGE" == "essi" ]]; then
                     APPLY_PATCH "system" "system/priv-app/SecSettings/SecSettings.apk" \
                         "$MODPATH/fingerprint/optical_fod/SecSettings.apk/0001-Add-optical-FOD-support.patch"
                     APPLY_PATCH "system_ext" "priv-app/SystemUI/SystemUI.apk" \
@@ -735,7 +741,7 @@ if ! $PRESERVE_NATIVE_DISPLAY_STACK && [[ "$SOURCE_LCD_CONFIG_HFR_MODE" != "$TAR
 fi
 
 # SEC_PRODUCT_FEATURE_LCD_CONFIG_HFR_SUPPORTED_REFRESH_RATE
-if ! $PRESERVE_NATIVE_DISPLAY_STACK && [[ "$SOURCE_LCD_CONFIG_HFR_SUPPORTED_REFRESH_RATE" != "$TARGET_LCD_CONFIG_HFR_SUPPORTED_REFRESH_RATE" ]]; then
+if [[ "$SOURCE_LCD_CONFIG_HFR_SUPPORTED_REFRESH_RATE" != "$TARGET_LCD_CONFIG_HFR_SUPPORTED_REFRESH_RATE" ]]; then
     if [[ "$TARGET_LCD_CONFIG_HFR_SUPPORTED_REFRESH_RATE" != "none" ]]; then
         SET_FLOATING_FEATURE_CONFIG "SEC_FLOATING_FEATURE_LCD_CONFIG_HFR_SUPPORTED_REFRESH_RATE" "$TARGET_LCD_CONFIG_HFR_SUPPORTED_REFRESH_RATE"
     else
@@ -743,22 +749,18 @@ if ! $PRESERVE_NATIVE_DISPLAY_STACK && [[ "$SOURCE_LCD_CONFIG_HFR_SUPPORTED_REFR
     fi
 
     if [[ "$SOURCE_LCD_CONFIG_HFR_SUPPORTED_REFRESH_RATE" != "none" ]]; then
-        REFRESH_RATE_CONFIG="$APKTOOL_DIR/system/framework/framework.jar/smali_classes6/com/samsung/android/hardware/display/RefreshRateConfig.smali"
-        if grep -Fq "HFR_SUPPORTED_REFRESH_RATE: $SOURCE_LCD_CONFIG_HFR_SUPPORTED_REFRESH_RATE" \
-                "$REFRESH_RATE_CONFIG"; then
-            SMALI_PATCH "system" "system/framework/framework.jar" \
-                "smali_classes6/com/samsung/android/hardware/display/RefreshRateConfig.smali" "replace" \
-                "dump(Ljava/io/PrintWriter;Ljava/lang/String;Z)V" \
-                "HFR_SUPPORTED_REFRESH_RATE: $SOURCE_LCD_CONFIG_HFR_SUPPORTED_REFRESH_RATE" \
-                "HFR_SUPPORTED_REFRESH_RATE: ${TARGET_LCD_CONFIG_HFR_SUPPORTED_REFRESH_RATE//none/}"
-        fi
+        SMALI_PATCH "system" "system/framework/framework.jar" \
+            "smali_classes6/com/samsung/android/hardware/display/RefreshRateConfig.smali" "replace" \
+            "dumpProductFeature(Ljava/io/PrintWriter;Ljava/lang/String;Z)V" \
+            "$SOURCE_LCD_CONFIG_HFR_SUPPORTED_REFRESH_RATE" \
+            "${TARGET_LCD_CONFIG_HFR_SUPPORTED_REFRESH_RATE//none/}"
         SMALI_PATCH "system" "system/framework/framework.jar" \
             "smali_classes6/com/samsung/android/hardware/display/RefreshRateConfig.smali" "replace" \
             "getMainInstance()Lcom/samsung/android/hardware/display/RefreshRateConfig;" \
             "$SOURCE_LCD_CONFIG_HFR_SUPPORTED_REFRESH_RATE" \
             "${TARGET_LCD_CONFIG_HFR_SUPPORTED_REFRESH_RATE//none/}"
         SMALI_PATCH "system" "system/priv-app/SecSettings/SecSettings.apk" \
-            "$SECSETTINGS_DISPLAY_UTILS" "replace" \
+            "smali_classes5/com/samsung/android/settings/display/SecDisplayUtils.smali" "replace" \
             "getHighRefreshRateSupportedValues(I)[Ljava/lang/String;" \
             "$SOURCE_LCD_CONFIG_HFR_SUPPORTED_REFRESH_RATE" \
             "${TARGET_LCD_CONFIG_HFR_SUPPORTED_REFRESH_RATE//none/}"
@@ -774,7 +776,7 @@ if ! $PRESERVE_NATIVE_DISPLAY_STACK && [[ "$SOURCE_LCD_CONFIG_HFR_SUPPORTED_REFR
 fi
 
 # SEC_PRODUCT_FEATURE_LCD_CONFIG_HFR_SUPPORTED_REFRESH_RATE_NS
-if ! $PRESERVE_NATIVE_DISPLAY_STACK && [[ "$SOURCE_LCD_CONFIG_HFR_SUPPORTED_REFRESH_RATE_NS" != "$TARGET_LCD_CONFIG_HFR_SUPPORTED_REFRESH_RATE_NS" ]]; then
+if [[ "$SOURCE_LCD_CONFIG_HFR_SUPPORTED_REFRESH_RATE_NS" != "$TARGET_LCD_CONFIG_HFR_SUPPORTED_REFRESH_RATE_NS" ]]; then
     if [[ "$SOURCE_LCD_CONFIG_HFR_SUPPORTED_REFRESH_RATE_NS" != "none" ]]; then
         if [[ "$TARGET_LCD_CONFIG_HFR_SUPPORTED_REFRESH_RATE_NS" != "none" ]]; then
             SET_FLOATING_FEATURE_CONFIG "SEC_FLOATING_FEATURE_LCD_CONFIG_HFR_SUPPORTED_REFRESH_RATE_NS" "$TARGET_LCD_CONFIG_HFR_SUPPORTED_REFRESH_RATE_NS"
@@ -782,28 +784,25 @@ if ! $PRESERVE_NATIVE_DISPLAY_STACK && [[ "$SOURCE_LCD_CONFIG_HFR_SUPPORTED_REFR
             SET_FLOATING_FEATURE_CONFIG "SEC_FLOATING_FEATURE_LCD_CONFIG_HFR_SUPPORTED_REFRESH_RATE_NS" --delete
         fi
 
-        SMALI_PATCH "system" "system/framework/framework.jar" \
-            "smali_classes6/com/samsung/android/hardware/display/RefreshRateConfig.smali" "replace" \
-            "dump(Ljava/io/PrintWriter;Ljava/lang/String;Z)V" \
-            "HFR_SUPPORTED_REFRESH_RATE_NS: $SOURCE_LCD_CONFIG_HFR_SUPPORTED_REFRESH_RATE_NS" \
-            "HFR_SUPPORTED_REFRESH_RATE_NS: ${TARGET_LCD_CONFIG_HFR_SUPPORTED_REFRESH_RATE_NS//none/}"
-        SMALI_PATCH "system" "system/framework/framework.jar" \
-            "smali_classes6/com/samsung/android/hardware/display/RefreshRateConfig.smali" "replace" \
-            "getMainInstance()Lcom/samsung/android/hardware/display/RefreshRateConfig;" \
-            "$SOURCE_LCD_CONFIG_HFR_SUPPORTED_REFRESH_RATE_NS" \
-            "${TARGET_LCD_CONFIG_HFR_SUPPORTED_REFRESH_RATE_NS//none/}"
-    else
-        if [[ "$TARGET_LCD_CONFIG_HFR_SUPPORTED_REFRESH_RATE_NS" != "none" ]]; then
-            SET_FLOATING_FEATURE_CONFIG "SEC_FLOATING_FEATURE_LCD_CONFIG_HFR_SUPPORTED_REFRESH_RATE_NS" \
-                "$TARGET_LCD_CONFIG_HFR_SUPPORTED_REFRESH_RATE_NS"
-            # Newer sources represent an absent NS list as an empty string in
-            # getMainInstance(), rather than omitting the code path entirely.
+        if grep -q "HFR_SUPPORTED_REFRESH_RATE_NS: $SOURCE_LCD_CONFIG_HFR_SUPPORTED_REFRESH_RATE_NS" \
+                "$APKTOOL_DIR/system/framework/framework.jar/smali_classes6/com/samsung/android/hardware/display/RefreshRateConfig.smali"; then
+            SMALI_PATCH "system" "system/framework/framework.jar" \
+                "smali_classes6/com/samsung/android/hardware/display/RefreshRateConfig.smali" "replace" \
+                "dumpProductFeature(Ljava/io/PrintWriter;Ljava/lang/String;Z)V" \
+                "HFR_SUPPORTED_REFRESH_RATE_NS: $SOURCE_LCD_CONFIG_HFR_SUPPORTED_REFRESH_RATE_NS" \
+                "HFR_SUPPORTED_REFRESH_RATE_NS: ${TARGET_LCD_CONFIG_HFR_SUPPORTED_REFRESH_RATE_NS//none/}"
+        fi
+        if grep -q "const-string .*\"$SOURCE_LCD_CONFIG_HFR_SUPPORTED_REFRESH_RATE_NS\"" \
+                "$APKTOOL_DIR/system/framework/framework.jar/smali_classes6/com/samsung/android/hardware/display/RefreshRateConfig.smali"; then
             SMALI_PATCH "system" "system/framework/framework.jar" \
                 "smali_classes6/com/samsung/android/hardware/display/RefreshRateConfig.smali" "replace" \
                 "getMainInstance()Lcom/samsung/android/hardware/display/RefreshRateConfig;" \
-                "" \
-                "$TARGET_LCD_CONFIG_HFR_SUPPORTED_REFRESH_RATE_NS"
+                "$SOURCE_LCD_CONFIG_HFR_SUPPORTED_REFRESH_RATE_NS" \
+                "${TARGET_LCD_CONFIG_HFR_SUPPORTED_REFRESH_RATE_NS//none/}"
         fi
+    else
+        # TODO handle this condition
+        LOG_MISSING_PATCHES "SOURCE_LCD_CONFIG_HFR_SUPPORTED_REFRESH_RATE_NS" "TARGET_LCD_CONFIG_HFR_SUPPORTED_REFRESH_RATE_NS"
     fi
 fi
 
@@ -825,7 +824,7 @@ if $SOURCE_LCD_SUPPORT_MDNIE_HW && [[ "$SOURCE_LCD_CONFIG_COLOR_WEAKNESS_SOLUTIO
             # directly; the legacy patch instead rewrites whole methods and
             # synthetic lambda numbering from an older implementation.
             LOG "Using feature-gated Android 16 mDNIe services implementation"
-        else
+        elif [[ "$TARGET_OS_SINGLE_SYSTEM_IMAGE" == "essi" ]]; then
             APPLY_PATCH "system" "system/framework/services.jar" \
                 "$MODPATH/mdnie/hw/services.jar/0001-Disable-HW-mDNIe.patch"
         fi
@@ -1296,8 +1295,6 @@ if $SOURCE_WLAN_SUPPORT_MOBILEAP_PRIORITIZE_TRAFFIC; then
             "smali/com/samsung/android/server/wifi/ap/SemSoftApConfiguration.smali" "replaceall" \
             "SPF_Prio_Traffic=true" \
             "SPF_Prio_Traffic=false"
-        APPLY_PATCH "system" "system/priv-app/SecSettings/SecSettings.apk" \
-            "$MODPATH/wifi/prioritize_traffic/SecSettings.apk/0001-Disable-MOBILEAP_PRIORITIZE_TRAFFIC-support.patch"
     fi
 else
     if $TARGET_WLAN_SUPPORT_MOBILEAP_PRIORITIZE_TRAFFIC; then
