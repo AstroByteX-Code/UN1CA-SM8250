@@ -1,4 +1,4 @@
-KERNEL_REPO="https://github.com/UN1CA/kernel_samsung_sm8250/releases/latest/download"
+KERNEL_REPO="https://github.com/AstroByteX-Code/unica-kernel_samsung_sm8250/releases/download/UN1CA-r8q-20261022-194513"
 
 LOG "- Downloading kernel"
 if [ -f "$WORK_DIR/kernel/boot.img" ]; then
