@@ -1,0 +1,4 @@
+id=voip
+name=VoIP call volume fix
+author=Code_by_Mian
+description=Fixes volume control for VoIP calls.
