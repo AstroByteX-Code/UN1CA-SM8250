@@ -1,0 +1,5 @@
+id=c2pa-cloudcore-fix
+name=VisualCloudCore C2PA Fix
+version=1.0.0
+author=tava_mon97
+description=Fixes crash in com.samsung.android.visual.cloudcore when editing photos/videos by providing C2PA V2 JNI trust check and file reading shims.
