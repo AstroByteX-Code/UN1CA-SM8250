@@ -22,25 +22,6 @@ ADD_TO_WORK_DIR "$TARGET_FIRMWARE" "system" "system/lib64/libsuperresolution_wra
 EVAL "echo \"libsuperresolution_wrapper_v2.camera.samsung.so\" >> \"$WORK_DIR/system/system/etc/public.libraries-camera.samsung.txt\""
 ADD_TO_WORK_DIR "$TARGET_FIRMWARE" "system" "system/lib64/libveengine.arcsoft.so" 0 0 644 "u:object_r:system_lib_file:s0"
 
-BLOBS_LIST="
-system/lib64/libhigh_dynamic_range.arcsoft.so
-system/lib64/liblow_light_hdr.arcsoft.so
-system/lib64/libhigh_res.arcsoft.so
-system/lib64/libsnap_aidl.snap.samsung.so
-system/lib64/libsuperresolution.arcsoft.so
-system/lib64/libsuperresolution_raw.arcsoft.so
-system/lib64/libsuperresolution_wrapper_v2.camera.samsung.so
-system/lib64/libsuperresolutionraw_wrapper_v2.camera.samsung.so
-system/lib64/libMultiFrameProcessing30.camera.samsung.so
-system/lib64/libMultiFrameProcessing30.snapwrapper.camera.samsung.so
-system/lib64/libMultiFrameProcessing30Tuning.camera.samsung.so
-"
-for blob in $BLOBS_LIST
-do
-    ADD_TO_WORK_DIR "p3qxxx" "system" "$blob" 0 0 644 "u:object_r:system_lib_file:s0" &
-done
-
-
 LOG_STEP_IN "- Adding dm3qxxx NightMode libs"
 ADD_TO_WORK_DIR "dm3qxxx" "system" "system/lib64/libSwIsp_core.camera.samsung.so" 0 0 644 "u:object_r:system_lib_file:s0"
 ADD_TO_WORK_DIR "dm3qxxx" "system" "system/lib64/libSwIsp_wrapper_v1.camera.samsung.so" 0 0 644 "u:object_r:system_lib_file:s0"
