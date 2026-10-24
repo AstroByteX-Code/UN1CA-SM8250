@@ -254,8 +254,18 @@ fi
 if ! grep -q "SUPPORT_SINGLE_TAKE_BURST_CAPTURE.*true" "$WORK_DIR/system/system/cameradata/camera-feature.xml" 2> /dev/null; then
     DELETE_FROM_WORK_DIR "system" "system/lib64/libBestPhoto.camera.samsung.so"
 fi
-SOURCE_CAMERA_CONFIG_VENDOR_LIB_INFO="$(GET_FLOATING_FEATURE_CONFIG "$FW_DIR/$SOURCE_FIRMWARE_PATH/system/system/etc/floating_feature.xml" "SEC_FLOATING_FEATURE_CAMERA_CONFIG_VENDOR_LIB_INFO")"
+# Normalize ArcSoft LLHDR and MFHDR node versions (v3 -> v1)
+# One UI Camera (core2) only registers ArcSoft LLHDR v1/v4 and MFHDR v1/v2/v4.
+# Legacy targets (e.g. r8q) specify v3 in stock VENDOR_LIB_INFO, which causes LlHdrDummyNode crash.
 TARGET_CAMERA_CONFIG_VENDOR_LIB_INFO="$(GET_FLOATING_FEATURE_CONFIG "SEC_FLOATING_FEATURE_CAMERA_CONFIG_VENDOR_LIB_INFO")"
+if [[ "$TARGET_CAMERA_CONFIG_VENDOR_LIB_INFO" == *"llhdr.arcsoft.v3"* ]] || \
+        [[ "$TARGET_CAMERA_CONFIG_VENDOR_LIB_INFO" == *"mfhdr.arcsoft.v3"* ]]; then
+    TARGET_CAMERA_CONFIG_VENDOR_LIB_INFO="${TARGET_CAMERA_CONFIG_VENDOR_LIB_INFO//llhdr.arcsoft.v3/llhdr.arcsoft.v1}"
+    TARGET_CAMERA_CONFIG_VENDOR_LIB_INFO="${TARGET_CAMERA_CONFIG_VENDOR_LIB_INFO//mfhdr.arcsoft.v3/mfhdr.arcsoft.v1}"
+    SET_FLOATING_FEATURE_CONFIG "SEC_FLOATING_FEATURE_CAMERA_CONFIG_VENDOR_LIB_INFO" "$TARGET_CAMERA_CONFIG_VENDOR_LIB_INFO"
+fi
+
+SOURCE_CAMERA_CONFIG_VENDOR_LIB_INFO="$(GET_FLOATING_FEATURE_CONFIG "$FW_DIR/$SOURCE_FIRMWARE_PATH/system/system/etc/floating_feature.xml" "SEC_FLOATING_FEATURE_CAMERA_CONFIG_VENDOR_LIB_INFO")"
 if [[ "$SOURCE_CAMERA_CONFIG_VENDOR_LIB_INFO" == *"aebhdr.arcsoft.v1"* ]] && \
         [[ "$TARGET_CAMERA_CONFIG_VENDOR_LIB_INFO" != *"aebhdr.arcsoft.v1"* ]]; then
     DELETE_FROM_WORK_DIR "system" "system/lib64/libAEBHDR_wrapper.camera.samsung.so"
@@ -351,8 +361,10 @@ while IFS= read -r f; do
 done < <(grep -r -w -l "ro.product.model" "$WORK_DIR/vendor" | grep "camera")
 HEX_PATCH "$WORK_DIR/system/system/lib64/libstagefright.so" \
     "726f2e70726f647563742e6d6f64656c00" "726f2e626f6f742e656d2e6d6f64656c00"
-HEX_PATCH "$WORK_DIR/system/system/lib64/libstagefright.so" \
-    "02408052e30315aae41f8052" "c21f8052e30315aae41f8052"        
+if xxd -p -c 0 "$WORK_DIR/system/system/lib64/libstagefright.so" | grep -q "02408052e30315aae41f8052"; then
+    HEX_PATCH "$WORK_DIR/system/system/lib64/libstagefright.so" \
+        "02408052e30315aae41f8052" "c21f8052e30315aae41f8052"
+fi
 
 # Fix object capture
 if [[ "$TARGET_OS_SINGLE_SYSTEM_IMAGE" == "essi" ]]; then
