@@ -1,6 +1,6 @@
-KERNEL_REPO="https://github.com/AstroByteX-Code/unica-kernel_samsung_sm8250/releases/download/UN1CA-r8q-20261022-194513"
+KERNEL_REPO="https://github.com/Z3phery/kernel_samsung_r8q/releases/latest/download"
 
-LOG "- Downloading kernel"
+LOG "- Downloading Shadow kernel"
 if [ -f "$WORK_DIR/kernel/boot.img" ]; then
     EVAL "rm -f \"$WORK_DIR/kernel/boot.img\""
 fi
