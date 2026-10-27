@@ -19,6 +19,15 @@ system/bin/mafpc_write
 PRODUCT_DEBLOAT+="
 priv-app/Velvet
 "
+# Chrome
+PRODUCT_DEBLOAT+="
+app/Chrome
+"
+
+# SBrowser
+SYSTEM_DEBLOAT+="
+system/app/SBrowser
+"
 
 # GameDriver
 SYSTEM_DEBLOAT+="
