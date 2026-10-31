@@ -1,9 +1,5 @@
 SET_PROP_IF_DIFF "vendor" "ro.oem_unlock_supported" "0"
 
-# Disable FRP
-SET_PROP "vendor" "ro.frp.pst" ""
-SET_PROP "product" "ro.frp.pst" ""
-
 # Better device/model detection in CoreRune
 SMALI_PATCH "system" "system/framework/framework.jar" \
     "smali_classes6/com/samsung/android/rune/CoreRune.smali" "replace" \
@@ -16,12 +12,17 @@ SMALI_PATCH "system" "system/framework/framework.jar" \
     'ro.product.device' \
     'ro.product.vendor.device'
 
-# shellcheck disable=SC2016
-# Disable RescueParty
-SMALI_PATCH "system" "system/framework/services.jar" \
-    "smali/com/android/server/RescueParty.smali" "return" \
-    '-$$Nest$smisDisabled()Z' \
-    'true'
+# Disable RescueParty when the AOSP implementation is present. Android 17's
+# Samsung framework no longer ships this class or its isDisabled() entrypoint.
+if [ -f "$APKTOOL_DIR/system/framework/services.jar/smali/com/android/server/RescueParty.smali" ]; then
+    # shellcheck disable=SC2016
+    SMALI_PATCH "system" "system/framework/services.jar" \
+        "smali/com/android/server/RescueParty.smali" "return" \
+        '-$$Nest$smisDisabled()Z' \
+        'true'
+else
+    LOG "- AOSP RescueParty implementation is absent; skipping legacy disable patch"
+fi
 
 # Better model detection in FreecessController
 SMALI_PATCH "system" "system/framework/services.jar" \
@@ -29,18 +30,3 @@ SMALI_PATCH "system" "system/framework/services.jar" \
     '<clinit>()V' \
     'ro.product.model' \
     'ro.product.vendor.model'
-    
-LOG_STEP_IN "- Enabling BSOH in deviceinfo"
-VALUE=${SOURCE_FIRMWARE:0:8}
-
-DECODE_APK "system" "system/priv-app/SecSettings/SecSettings.apk"
-
-FTP="
-system/priv-app/SecSettings/SecSettings.apk/smali_classes5/com/samsung/android/settings/deviceinfo/batteryinfo/BatteryRegulatoryPreferenceController.smali
-system/priv-app/SecSettings/SecSettings.apk/smali_classes5/com/samsung/android/settings/deviceinfo/batteryinfo/SecBatteryInfoFragment.smali
-"
-
-for i in $FTP; do
-    sed -i "s/SM-A236B/$VALUE/g" "$APKTOOL_DIR/$i"
-done
-LOG_STEP_OUT
