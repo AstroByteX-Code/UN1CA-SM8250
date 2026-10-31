@@ -1,4 +1,3 @@
-# [
 LOG_MISSING_PATCHES()
 {
     local MESSAGE="Missing SPF patches for condition ($1: [${!1}], $2: [${!2}])"
@@ -9,64 +8,49 @@ LOG_MISSING_PATCHES()
         ABORT "${MESSAGE}. Aborting"
     fi
 }
-# ]
 
-# SEC_PRODUCT_FEATURE_SECURITY_CONFIG_ESE_CHIP_VENDOR
-# SEC_PRODUCT_FEATURE_SECURITY_CONFIG_ESE_COS_NAME
-if [[ "$SOURCE_SECURITY_CONFIG_ESE_CHIP_VENDOR" == "$TARGET_SECURITY_CONFIG_ESE_CHIP_VENDOR" ]] && \
-    [[ "$SOURCE_SECURITY_CONFIG_ESE_COS_NAME" == "$TARGET_SECURITY_CONFIG_ESE_COS_NAME" ]]; then
-    LOG "\033[0;33m! Nothing to do\033[0m"
-    unset -f LOG_MISSING_PATCHES
-    return 0
-fi
+if [[ "$SOURCE_SECURITY_CONFIG_ESE_CHIP_VENDOR" == "NXP" ]] && \
+   [[ "$SOURCE_SECURITY_CONFIG_ESE_COS_NAME" == "JCOP6.2U" ]] && \
+   [[ "$TARGET_SECURITY_CONFIG_ESE_CHIP_VENDOR" == "none" ]] && \
+   [[ "$TARGET_SECURITY_CONFIG_ESE_COS_NAME" == "none" ]]; then
 
-if [[ "$SOURCE_SECURITY_CONFIG_ESE_CHIP_VENDOR" == "NXP" ]] && [[ "$SOURCE_SECURITY_CONFIG_ESE_COS_NAME" == "JCOP6.2U" ]] && \
-        [[ "$TARGET_SECURITY_CONFIG_ESE_CHIP_VENDOR" == "none" ]] && [[ "$TARGET_SECURITY_CONFIG_ESE_COS_NAME" == "none" ]]; then
     APPLY_PATCH "system" "system/app/SecureElement/SecureElement.apk" \
         "$MODPATH/ese/SecureElement.apk/0001-Disable-eSE-support.patch"
+
     DELETE_FROM_WORK_DIR "system" "system/bin/sem_daemon"
     DELETE_FROM_WORK_DIR "system" "system/etc/init/sem.rc" 2>&1 | sed "/File not found/d"
     DELETE_FROM_WORK_DIR "system" "system/etc/init/sem_early.rc" 2>&1 | sed "/File not found/d"
     DELETE_FROM_WORK_DIR "system" "system/etc/permissions/privapp-permissions-com.samsung.android.ese.xml"
     DELETE_FROM_WORK_DIR "system" "system/etc/permissions/privapp-permissions-com.sem.factoryapp.xml"
-    APPLY_PATCH "system" "system/framework/framework.jar" "$MODPATH/ese/framework.jar/0001-Disable-SemService.patch"
-    EVAL "cp -a \"$MODPATH/framework.jar/SemService.smali\" \"$APKTOOL_DIR/system/framework/framework.jar/smali_classes6/com/android/server/SemService.smali\""
-    APPLY_PATCH "system" "system/framework/services.jar" "$MODPATH/ese/services.jar/0001-Disable-SemService.patch"
-    ADD_TO_WORK_DIR "$([[ "$TARGET_OS_SINGLE_SYSTEM_IMAGE" == "qssi" ]] && echo "a73xqxx" || echo "a54xnsxx")" \
-        "system" "system/lib/libsec_semRil.so" 0 0 644 "u:object_r:system_lib_file:s0"
-    ADD_TO_WORK_DIR "$([[ "$TARGET_OS_SINGLE_SYSTEM_IMAGE" == "qssi" ]] && echo "a73xqxx" || echo "a54xnsxx")" \
-        "system" "system/lib/libtlc_blockchain_keystore.so" 0 0 644 "u:object_r:system_lib_file:s0"
-    ADD_TO_WORK_DIR "$([[ "$TARGET_OS_SINGLE_SYSTEM_IMAGE" == "qssi" ]] && echo "a73xqxx" || echo "a54xnsxx")" \
-        "system" "system/lib/libtlc_payment_spay.so" 0 0 644 "u:object_r:system_lib_file:s0"
-    ADD_TO_WORK_DIR "$([[ "$TARGET_OS_SINGLE_SYSTEM_IMAGE" == "qssi" ]] && echo "a73xqxx" || echo "a54xnsxx")" \
-        "system" "system/lib64/libsec_semRil.so" 0 0 644 "u:object_r:system_lib_file:s0"
-    ADD_TO_WORK_DIR "$([[ "$TARGET_OS_SINGLE_SYSTEM_IMAGE" == "qssi" ]] && echo "a73xqxx" || echo "a54xnsxx")" \
-        "system" "system/lib64/libtlc_blockchain_keystore.so" 0 0 644 "u:object_r:system_lib_file:s0"
-    ADD_TO_WORK_DIR "$([[ "$TARGET_OS_SINGLE_SYSTEM_IMAGE" == "qssi" ]] && echo "a73xqxx" || echo "a54xnsxx")" \
-        "system" "system/lib64/libtlc_payment_spay.so" 0 0 644 "u:object_r:system_lib_file:s0"
+
+    APPLY_PATCH "system" "system/framework/framework.jar" \
+        "$MODPATH/ese/framework.jar/0001-Disable-SemService.patch"
+
+    EVAL "cp -a \"$MODPATH/framework.jar/SemService.smali\" \
+        \"$APKTOOL_DIR/system/framework/framework.jar/smali_classes6/com/android/server/SemService.smali\""
+
+    APPLY_PATCH "system" "system/framework/services.jar" \
+        "$MODPATH/ese/services.jar/0001-Disable-SemService.patch"
+
+    for LIB in \
+        system/lib/libsec_semRil.so \
+        system/lib/libtlc_blockchain_keystore.so \
+        system/lib/libtlc_payment_spay.so \
+        system/lib64/libsec_semRil.so \
+        system/lib64/libtlc_blockchain_keystore.so \
+        system/lib64/libtlc_payment_spay.so
+    do
+        ADD_TO_WORK_DIR \
+            "$([[ "$TARGET_OS_SINGLE_SYSTEM_IMAGE" == "qssi" ]] && echo "a73xqxx" || echo "a54xnsxx")" \
+            "system" "$LIB" 0 0 644 "u:object_r:system_lib_file:s0"
+    done
+
     DELETE_FROM_WORK_DIR "system" "system/priv-app/SEMFactoryApp"
     DELETE_FROM_WORK_DIR "system" "system/priv-app/SamsungSeAgent"
-    unset -f LOG_MISSING_PATCHES
-    return 0
-fi
 
-if [[ "$SOURCE_SECURITY_CONFIG_ESE_CHIP_VENDOR" != "none" ]] && [[ "$SOURCE_SECURITY_CONFIG_ESE_COS_NAME" != "none" ]]; then
-    if [[ "$SOURCE_SECURITY_CONFIG_ESE_COS_NAME" != "$TARGET_SECURITY_CONFIG_ESE_COS_NAME" ]]; then
-        if [[ "$TARGET_SECURITY_CONFIG_ESE_CHIP_VENDOR" == "MULTI" ]]; then
-            GEMALTO_COS_NAME="${TARGET_SECURITY_CONFIG_ESE_COS_NAME%%_*}"
-            NXP_COS_NAME="${TARGET_SECURITY_CONFIG_ESE_COS_NAME#*_}"
+elif [[ "$SOURCE_SECURITY_CONFIG_ESE_CHIP_VENDOR" != "none" ]] && \
+     [[ "$SOURCE_SECURITY_CONFIG_ESE_COS_NAME" != "none" ]]; then
 
-            if [[ "$GEMALTO_COS_NAME" != "U"* ]] || [[ "$NXP_COS_NAME" != "J"* ]]; then
-                ABORT "Malformed string set in TARGET_SECURITY_CONFIG_ESE_COS_NAME: \"$TARGET_SECURITY_CONFIG_ESE_COS_NAME\""
-            fi
-
-            SET_PROP "system" "ro.security.ese.cosname.default" "UT${GEMALTO_COS_NAME#U}|JCOP${NXP_COS_NAME#J}"
-
-            unset GEMALTO_COS_NAME NXP_COS_NAME
-        else
-            SET_PROP "system" "ro.security.ese.cosname.default" "$TARGET_SECURITY_CONFIG_ESE_COS_NAME"
-        fi
-    fi
     if [[ "$SOURCE_SECURITY_CONFIG_ESE_COS_NAME" != "$TARGET_SECURITY_CONFIG_ESE_COS_NAME" ]]; then
         SMALI_PATCH "system" "system/app/SecureElement/SecureElement.apk" \
             "smali/com/android/se/internal/UtilExtension.smali" "replace" \
@@ -74,6 +58,7 @@ if [[ "$SOURCE_SECURITY_CONFIG_ESE_CHIP_VENDOR" != "none" ]] && [[ "$SOURCE_SECU
             "$SOURCE_SECURITY_CONFIG_ESE_COS_NAME" \
             "${TARGET_SECURITY_CONFIG_ESE_COS_NAME//none/}"
     fi
+
     if [[ "$SOURCE_SECURITY_CONFIG_ESE_COS_NAME" != "$TARGET_SECURITY_CONFIG_ESE_COS_NAME" ]]; then
         SMALI_PATCH "system" "system/app/SecureElement/SecureElement.apk" \
             "smali/com/android/se/internal/UtilExtension.smali" "replace" \
@@ -81,6 +66,7 @@ if [[ "$SOURCE_SECURITY_CONFIG_ESE_CHIP_VENDOR" != "none" ]] && [[ "$SOURCE_SECU
             "eSE_COS: $SOURCE_SECURITY_CONFIG_ESE_COS_NAME" \
             "eSE_COS: ${TARGET_SECURITY_CONFIG_ESE_COS_NAME//none/}"
     fi
+
     if [[ "$SOURCE_SECURITY_CONFIG_ESE_CHIP_VENDOR" != "$TARGET_SECURITY_CONFIG_ESE_CHIP_VENDOR" ]]; then
         SMALI_PATCH "system" "system/app/SecureElement/SecureElement.apk" \
             "smali/com/android/se/internal/UtilExtension.smali" "replace" \
@@ -88,62 +74,72 @@ if [[ "$SOURCE_SECURITY_CONFIG_ESE_CHIP_VENDOR" != "none" ]] && [[ "$SOURCE_SECU
             "eSE_Vendor: $SOURCE_SECURITY_CONFIG_ESE_CHIP_VENDOR" \
             "eSE_Vendor: ${TARGET_SECURITY_CONFIG_ESE_CHIP_VENDOR//none/}"
     fi
+
     if [[ "$SOURCE_SECURITY_CONFIG_ESE_COS_NAME" != "$TARGET_SECURITY_CONFIG_ESE_COS_NAME" ]]; then
         SMALI_PATCH "system" "system/app/SecureElement/SecureElement.apk" \
             "smali/com/android/se/internal/UtilExtension.smali" "replace" \
             "supportEseHal()Z" \
-            "$SOURCE_SECURITY_CONFIG_ESE_COS_NAME" \
-            "${TARGET_SECURITY_CONFIG_ESE_COS_NAME//none/}"
+            ", eSE_COS: $SOURCE_SECURITY_CONFIG_ESE_COS_NAME" \
+            ", eSE_COS: ${TARGET_SECURITY_CONFIG_ESE_COS_NAME//none/}"
     fi
+
     if [[ "$SOURCE_SECURITY_CONFIG_ESE_CHIP_VENDOR" != "$TARGET_SECURITY_CONFIG_ESE_CHIP_VENDOR" ]]; then
         SMALI_PATCH "system" "system/framework/framework.jar" \
             "smali_classes6/com/android/server/SemService.smali" "replaceall" \
             "$SOURCE_SECURITY_CONFIG_ESE_CHIP_VENDOR" \
             "${TARGET_SECURITY_CONFIG_ESE_CHIP_VENDOR//none/}"
     fi
+
     if [[ "$SOURCE_SECURITY_CONFIG_ESE_COS_NAME" != "$TARGET_SECURITY_CONFIG_ESE_COS_NAME" ]]; then
         SMALI_PATCH "system" "system/framework/framework.jar" \
             "smali_classes6/com/android/server/SemService.smali" "replaceall" \
             "$SOURCE_SECURITY_CONFIG_ESE_COS_NAME" \
             "${TARGET_SECURITY_CONFIG_ESE_COS_NAME//none/}"
     fi
+
     if [[ "$SOURCE_SECURITY_CONFIG_ESE_CHIP_VENDOR" != "$TARGET_SECURITY_CONFIG_ESE_CHIP_VENDOR" ]]; then
         SMALI_PATCH "system" "system/framework/framework.jar" \
             "smali_classes6/com/samsung/android/service/SemService/SemServiceManager.smali" "replaceall" \
             "$SOURCE_SECURITY_CONFIG_ESE_CHIP_VENDOR" \
             "${TARGET_SECURITY_CONFIG_ESE_CHIP_VENDOR//none/}"
     fi
+
     if [[ "$SOURCE_SECURITY_CONFIG_ESE_COS_NAME" != "$TARGET_SECURITY_CONFIG_ESE_COS_NAME" ]]; then
         SMALI_PATCH "system" "system/framework/framework.jar" \
             "smali_classes6/com/samsung/android/service/SemService/SemServiceManager.smali" "replaceall" \
             "$SOURCE_SECURITY_CONFIG_ESE_COS_NAME" \
             "${TARGET_SECURITY_CONFIG_ESE_COS_NAME//none/}"
     fi
-    if [[ "$SOURCE_SECURITY_CONFIG_ESE_COS_NAME" != "$TARGET_SECURITY_CONFIG_ESE_COS_NAME" ]]; then
-        SMALI_PATCH "system" "system/framework/services.jar" \
-            "smali/com/android/server/SystemConfig.smali" "replace" \
-            "readAllPermissions()V" \
-            "eSE_COS: $SOURCE_SECURITY_CONFIG_ESE_COS_NAME" \
-            "eSE_COS: ${TARGET_SECURITY_CONFIG_ESE_COS_NAME//none/}"
-    fi
+
     if [[ "$SOURCE_SECURITY_CONFIG_ESE_CHIP_VENDOR" != "$TARGET_SECURITY_CONFIG_ESE_CHIP_VENDOR" ]]; then
         SMALI_PATCH "system" "system/framework/services.jar" \
             "smali_classes2/com/samsung/ucm/ucmservice/CredentialManagerService.smali" "replaceall" \
             "$SOURCE_SECURITY_CONFIG_ESE_CHIP_VENDOR" \
             "${TARGET_SECURITY_CONFIG_ESE_CHIP_VENDOR//none/}"
     fi
+
 else
-    LOG_MISSING_PATCHES "SOURCE_SECURITY_CONFIG_ESE_CHIP_VENDOR" "TARGET_SECURITY_CONFIG_ESE_CHIP_VENDOR" || true
-    LOG_MISSING_PATCHES "SOURCE_SECURITY_CONFIG_ESE_COS_NAME" "TARGET_SECURITY_CONFIG_ESE_COS_NAME"
+    LOG_MISSING_PATCHES \
+        "SOURCE_SECURITY_CONFIG_ESE_CHIP_VENDOR" \
+        "TARGET_SECURITY_CONFIG_ESE_CHIP_VENDOR" || true
+
+    LOG_MISSING_PATCHES \
+        "SOURCE_SECURITY_CONFIG_ESE_COS_NAME" \
+        "TARGET_SECURITY_CONFIG_ESE_COS_NAME"
 fi
 
 # SEC_PRODUCT_FEATURE_SECURITY_SUPPORT_ESEK
 if ! $SOURCE_SECURITY_SUPPORT_ESEK && $TARGET_SECURITY_SUPPORT_ESEK; then
     SET_PROP "system" "ro.security.ese.support_esek" "true"
-    APPLY_PATCH "system" "system/framework/framework.jar" "$MODPATH/esek/framework.jar/0001-Enable-SUPPORT_ESEK.patch"
+
+    APPLY_PATCH "system" "system/framework/framework.jar" \
+        "$MODPATH/esek/framework.jar/0001-Enable-SUPPORT_ESEK.patch"
+
 elif $SOURCE_SECURITY_SUPPORT_ESEK && ! $TARGET_SECURITY_SUPPORT_ESEK; then
     SET_PROP "system" "ro.security.ese.support_esek" "false"
-    APPLY_PATCH "system" "system/framework/framework.jar" "$MODPATH/esek/framework.jar/0001-Disable-SUPPORT_ESEK.patch"
+
+    APPLY_PATCH "system" "system/framework/framework.jar" \
+        "$MODPATH/esek/framework.jar/0001-Disable-SUPPORT_ESEK.patch"
 fi
 
 unset -f LOG_MISSING_PATCHES
