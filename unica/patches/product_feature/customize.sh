@@ -1072,8 +1072,6 @@ if [[ "$SOURCE_WLAN_CONFIG_CONNECTION_PERSONALIZATION" != "$TARGET_WLAN_CONFIG_C
             "CONFIG_CONNECTION_PERSONALIZATION" \
             "$TARGET_WLAN_CONFIG_CONNECTION_PERSONALIZATION" | \
             sed "s/CONFIG_CONNECTION_PERSONALIZATION/$SOURCE_WLAN_CONFIG_CONNECTION_PERSONALIZATION/g"
-        APPLY_PATCH "system" "system/priv-app/SecSettings/SecSettings.apk" \
-            "$MODPATH/wifi/connection_personalization/SecSettings.apk/0001-Allow-custom-CONNECTION_PERSONALIZATION-value.patch"
         BTM_CONTROLLER="$(find "$APKTOOL_DIR/system/priv-app/SecSettings/SecSettings.apk" \
             -path '*/com/samsung/android/settings/wifi/develop/*/btm/BtmController.smali' \
             -printf '%P\n' -quit)"
@@ -1083,9 +1081,8 @@ if [[ "$SOURCE_WLAN_CONFIG_CONNECTION_PERSONALIZATION" != "$TARGET_WLAN_CONFIG_C
         SMALI_PATCH "system" "system/priv-app/SecSettings/SecSettings.apk" \
             "$BTM_CONTROLLER" "replace" \
             "getAvailabilityStatus()I" \
-            "CONFIG_CONNECTION_PERSONALIZATION" \
-            "$TARGET_WLAN_CONFIG_CONNECTION_PERSONALIZATION" | \
-            sed "s/CONFIG_CONNECTION_PERSONALIZATION/$SOURCE_WLAN_CONFIG_CONNECTION_PERSONALIZATION/g"
+            "$SOURCE_WLAN_CONFIG_CONNECTION_PERSONALIZATION" \
+            "$TARGET_WLAN_CONFIG_CONNECTION_PERSONALIZATION"
 
         if [[ "$SOURCE_WLAN_CONFIG_DYNAMIC_SWITCH" != "$TARGET_WLAN_CONFIG_DYNAMIC_SWITCH" ]]; then
             SMALI_PATCH "system" "system/framework/semwifi-service.jar" \
@@ -1108,8 +1105,27 @@ if [[ "$SOURCE_WLAN_CONFIG_CONNECTION_PERSONALIZATION" != "$TARGET_WLAN_CONFIG_C
         if ! $TARGET_WLAN_SUPPORT_APE_SERVICE; then
             APPLY_PATCH "system" "system/framework/semwifi-service.jar" \
                 "$MODPATH/wifi/ape_service/semwifi-service.jar/0001-Disable-APE_SERVICE-support.patch"
-            APPLY_PATCH "system" "system/priv-app/SecSettings/SecSettings.apk" \
-                "$MODPATH/wifi/ape_service/SecSettings.apk/0001-Disable-APE_SERVICE-support.patch"
+            APE_CONTROLLER="$(find "$APKTOOL_DIR/system/priv-app/SecSettings/SecSettings.apk" \
+                -path '*/com/samsung/android/settings/wifi/develop/ApePreferenceController.smali' \
+                -printf '%P\n' -quit)"
+            if [[ -z "$APE_CONTROLLER" ]]; then
+                ABORT "Failed to locate ApePreferenceController.smali in SecSettings.apk"
+            fi
+
+            APE_CONTROLLER_PATH="$APKTOOL_DIR/system/priv-app/SecSettings/SecSettings.apk/$APE_CONTROLLER"
+            if grep -Fq '.field private static final SUPPORT_APE_SERVICE:Z = true' "$APE_CONTROLLER_PATH"; then
+                SMALI_PATCH "system" "system/priv-app/SecSettings/SecSettings.apk" \
+                    "$APE_CONTROLLER" "replaceall" \
+                    '.field private static final SUPPORT_APE_SERVICE:Z = true' \
+                    '.field private static final SUPPORT_APE_SERVICE:Z = false'
+            elif ! grep -Fq '.field private static final SUPPORT_APE_SERVICE:Z = false' "$APE_CONTROLLER_PATH"; then
+                ABORT "Unknown SUPPORT_APE_SERVICE field in ApePreferenceController.smali"
+            fi
+            SMALI_PATCH "system" "system/priv-app/SecSettings/SecSettings.apk" \
+                "$APE_CONTROLLER" "replace" \
+                "getAvailabilityStatus()I" \
+                "const/4 p0, 0x0" \
+                "const/4 p0, 0x3"
         fi
     else
         # TODO handle these conditions
