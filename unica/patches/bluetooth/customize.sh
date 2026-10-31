@@ -261,30 +261,37 @@ fi
 # Disable VaultKeeper support
 # Before: [tbnz w8, #0, #0xXXXXXX]
 # After: [b #0xXXXXXX]
-VK_FROM="2897773948050037"
-VK_TO="289777392a000014"
-
-# Android 16 BP4A moved the flag inside the Bluetooth native context, which
-# changed the preceding LDRB encoding.  The TBNZ and its destination retain
-# the same purpose, so patch the matching firmware-specific instruction pair.
-if xxd -p -c 0 "$TMP_DIR/unknown/apex_payload/lib64/libbluetooth_jni.so" | \
-        grep -q "8876743948050037"; then
-    VK_FROM="8876743948050037"
-    VK_TO="887674392a000014"
-elif xxd -p -c 0 "$TMP_DIR/unknown/apex_payload/lib64/libbluetooth_jni.so" | \
-        grep -q "28f7773948050037"; then
-    # August firmware variant used by current upstream donors.
-    VK_FROM="28f7773948050037"
-    VK_TO="28f777392a000014"
-elif xxd -p -c 0 "$TMP_DIR/unknown/apex_payload/lib64/libbluetooth_jni.so" | \
-        grep -q "88d6743948050037"; then
-    # BP4A.251205.006 (S24U base): ldrb w8, [x20, #0xd35]
-    VK_FROM="88d6743948050037"
-    VK_TO="88d674392a000014"
+if xxd -p -c 0 "$TMP_DIR/unknown/apex_payload/lib64/libbluetooth_jni.so" | grep -q "2897773948050037"; then
+    LOG "- Patching \"2897773948050037\" to \"289777392a000014\" in apex_payload/lib64/libbluetooth_jni.so"
+    HEX_PATCH "$TMP_DIR/unknown/apex_payload/lib64/libbluetooth_jni.so" \
+        "2897773948050037" "289777392a000014" > /dev/null
+elif xxd -p -c 0 "$TMP_DIR/unknown/apex_payload/lib64/libbluetooth_jni.so" | grep -q "2897663948050037"; then
+    LOG "- Patching \"2897663948050037\" to \"289766392a000014\" in apex_payload/lib64/libbluetooth_jni.so"
+    HEX_PATCH "$TMP_DIR/unknown/apex_payload/lib64/libbluetooth_jni.so" \
+        "2897663948050037" "289766392a000014" > /dev/null
+elif xxd -p -c 0 "$TMP_DIR/unknown/apex_payload/lib64/libbluetooth_jni.so" | grep -q "f6713948050037330080"; then
+    LOG "- Patching \"f6713948050037330080\" to \"f671392a000014330080\" in apex_payload/lib64/libbluetooth_jni.so"
+    HEX_PATCH "$TMP_DIR/unknown/apex_payload/lib64/libbluetooth_jni.so" \
+        "f6713948050037330080" "f671392a000014330080" > /dev/null
+elif xxd -p -c 0 "$TMP_DIR/unknown/apex_payload/lib64/libbluetooth_jni.so" | grep -q "f6733948050037330080"; then
+    LOG "- Patching \"f6733948050037330080\" to \"f673392a000014330080\" in apex_payload/lib64/libbluetooth_jni.so"
+    HEX_PATCH "$TMP_DIR/unknown/apex_payload/lib64/libbluetooth_jni.so" \
+        "f6733948050037330080" "f673392a000014330080" > /dev/null
+elif xxd -p -c 0 "$TMP_DIR/unknown/apex_payload/lib64/libbluetooth_jni.so" | grep -q "76743948050037330080"; then
+    LOG "- Patching \"76743948050037330080\" to \"7674392a000014330080\" in apex_payload/lib64/libbluetooth_jni.so"
+    HEX_PATCH "$TMP_DIR/unknown/apex_payload/lib64/libbluetooth_jni.so" \
+        "76743948050037330080" "7674392a000014330080" > /dev/null
+elif xxd -p -c 0 "$TMP_DIR/unknown/apex_payload/lib64/libbluetooth_jni.so" | grep -q "88d6743948050037"; then
+    LOG "- Patching \"88d6743948050037\" to \"88d674392a000014\" in apex_payload/lib64/libbluetooth_jni.so"
+    HEX_PATCH "$TMP_DIR/unknown/apex_payload/lib64/libbluetooth_jni.so" \
+        "88d6743948050037" "88d674392a000014" > /dev/null
+elif xxd -p -c 0 "$TMP_DIR/unknown/apex_payload/lib64/libbluetooth_jni.so" | grep -q "8856523948050037"; then
+    LOG "- Patching \"8856523948050037\" to \"885652392a000014\" in apex_payload/lib64/libbluetooth_jni.so"
+    HEX_PATCH "$TMP_DIR/unknown/apex_payload/lib64/libbluetooth_jni.so" \
+        "8856523948050037" "885652392a000014" > /dev/null
+else
+    ABORT "No known patch available for the supplied libbluetooth_jni.so"
 fi
-
-HEX_PATCH "$TMP_DIR/unknown/apex_payload/lib64/libbluetooth_jni.so" \
-    "$VK_FROM" "$VK_TO" > /dev/null
 
 BUILD_APK_IN_APEX "$BT_APK"
 BUILD_APK_IN_APEX "$TMP_DIR/unknown/apex_payload/javalib/framework-bluetooth.jar"
