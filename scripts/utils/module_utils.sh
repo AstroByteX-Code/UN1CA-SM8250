@@ -88,53 +88,65 @@ GET_GALAXY_STORE_DOWNLOAD_URL()
     # Galaxy S25 Ultra EUR_OPENX
     # Galaxy S22 Ultra GBL_OPENX
     # Galaxy S25 Ultra KOR_SINGLEX
-    DEVICES=("SM-S938B" "SM-S901E" "SM-S938N")
+    # Galaxy Jump3 KOR_OPENX (SM8250 / FM Radio)
+    DEVICES=("SM-S938B" "SM-S901E" "SM-S938N" "SM-M446K")
 
     OS="$(GET_PROP "system" "ro.build.version.sdk")"
     ONEUI="$(GET_PROP "system" "ro.build.version.oneui")"
 
-    if [ ! "$OS" ]; then
+    # Galaxy Store servers do not support Android 17 (SDK 37+) / One UI 9.0+ yet
+    if [ ! "$OS" ] || [ "$OS" -gt "36" ] 2> /dev/null; then
         # Fallback to Android 16
         OS="36"
     fi
-    if [ ! "$ONEUI" ]; then
+    if [ ! "$ONEUI" ] || [ "$ONEUI" -gt "80000" ] 2> /dev/null; then
         # Fallback to One UI 8.0
         ONEUI="80000"
     fi
 
-    PROTOCOL+="<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\" ?>"
-    PROTOCOL+="<SamsungProtocol networkType=\"0\" openApiVersion=\"$OS\" deviceModel=\"DEVICE\""
-    PROTOCOL+=" mcc=\"262\" mnc=\"01\" csc=\"EUX\" version=\"7.7\""
-    PROTOCOL+=" deviceFeature=\"locale=en_GB||abi32=armeabi-v7a:armeabi||abi64=arm64-v8a||oneUiVersion=$ONEUI\">"
-    PROTOCOL+="<request id=\"2303\" numParam=\"2\">"
-    PROTOCOL+="<param name=\"stduk\">0</param>"
-    PROTOCOL+="<param name=\"productID\">PRODUCTID</param>"
-    PROTOCOL+="</request>"
-    PROTOCOL+="</SamsungProtocol>"
+    local VERSIONS=("$OS:$ONEUI")
+    if [ "$OS" != "34" ]; then
+        # Fallback to Android 14 / One UI 6.1 for legacy packages
+        VERSIONS+=("34:60100")
+    fi
 
-    local OUT
-    local REQUEST
-    for i in "${DEVICES[@]}"; do
-        if [[ "$PACKAGE" =~ ^[+-]?[0-9]+$ ]]; then
-            OUT="$PACKAGE"
-        else
-            OUT="$(curl -L -s "https://vas.samsungapps.com/stub/stubUpdateCheck.as?appId=$PACKAGE&versionCode=0&deviceId=$i&mcc=262&mnc=01&csc=EUX&sdkVer=$OS&oneUiVersion=$ONEUI&systemId=0")"
-            OUT="$(grep -o -P "(?<=<productId>)[^<]+" <<< "$OUT")"
-            if [ ! "$OUT" ]; then
-                continue
+    local VER V_OS V_ONEUI OUT REQUEST
+    for VER in "${VERSIONS[@]}"; do
+        V_OS="${VER%%:*}"
+        V_ONEUI="${VER##*:}"
+
+        PROTOCOL="<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\" ?>"
+        PROTOCOL+="<SamsungProtocol networkType=\"0\" openApiVersion=\"$V_OS\" deviceModel=\"DEVICE\""
+        PROTOCOL+=" mcc=\"262\" mnc=\"01\" csc=\"EUX\" version=\"7.7\""
+        PROTOCOL+=" deviceFeature=\"locale=en_GB||abi32=armeabi-v7a:armeabi||abi64=arm64-v8a||oneUiVersion=$V_ONEUI\">"
+        PROTOCOL+="<request id=\"2303\" numParam=\"2\">"
+        PROTOCOL+="<param name=\"stduk\">0</param>"
+        PROTOCOL+="<param name=\"productID\">PRODUCTID</param>"
+        PROTOCOL+="</request>"
+        PROTOCOL+="</SamsungProtocol>"
+
+        for i in "${DEVICES[@]}"; do
+            if [[ "$PACKAGE" =~ ^[+-]?[0-9]+$ ]]; then
+                OUT="$PACKAGE"
+            else
+                OUT="$(curl -L -s "https://vas.samsungapps.com/stub/stubUpdateCheck.as?appId=$PACKAGE&versionCode=0&deviceId=$i&mcc=262&mnc=01&csc=EUX&sdkVer=$V_OS&oneUiVersion=$V_ONEUI&systemId=0")"
+                OUT="$(grep -o -P "(?<=<productId>)[^<]+" <<< "$OUT")"
+                if [ ! "$OUT" ]; then
+                    continue
+                fi
             fi
-        fi
 
-        REQUEST="$PROTOCOL"
-        REQUEST="${REQUEST//DEVICE/$i}"
-        REQUEST="${REQUEST//PRODUCTID/$OUT}"
+            REQUEST="$PROTOCOL"
+            REQUEST="${REQUEST//DEVICE/$i}"
+            REQUEST="${REQUEST//PRODUCTID/$OUT}"
 
-        OUT="$(curl -L -s "https://uk-odc.samsungapps.com/ods.as" -H "Content-Type: text/plain" -d "$REQUEST")"
-        OUT="$(grep -o -P "(?<=<value name=\"downLoadURI\">)[^<]+" <<< "$OUT")"
-        if [ "$OUT" ]; then
-            echo "${OUT//amp;/}"
-            return 0
-        fi
+            OUT="$(curl -L -s "https://uk-odc.samsungapps.com/ods.as" -H "Content-Type: text/plain" -d "$REQUEST")"
+            OUT="$(grep -o -P "(?<=<value name=\"downLoadURI\">)[^<]+" <<< "$OUT")"
+            if [ "$OUT" ]; then
+                echo "${OUT//amp;/}"
+                return 0
+            fi
+        done
     done
 
     LOGE "No download URI found for app \"$PACKAGE\""
