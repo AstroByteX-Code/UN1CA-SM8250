@@ -60,28 +60,7 @@ DELETE_FROM_WORK_DIR "vendor" "etc/init/android.hardware.configstore@1.1-service
 DELETE_FROM_WORK_DIR "vendor" "etc/seccomp_policy/configstore@1.1.policy"
 LOG_STEP_OUT
 
-LOG_STEP_IN "- Allowing mremap in vendor Codec2 seccomp policies"
-C2_POLICY_FIRST=""
-C2_POLICY_PATCHED=false
-while IFS= read -r f; do
-    [ -z "$C2_POLICY_FIRST" ] && C2_POLICY_FIRST="$f"
-    if grep -q "^mremap:" "$f"; then
-        sed -i 's/^mremap:.*/mremap: 1/' "$f"
-        C2_POLICY_PATCHED=true
-        LOG "- Relaxed mremap rule in $(basename "$f")"
-    fi
-done < <(find "$WORK_DIR/vendor/etc/seccomp_policy" -type f \( -iname "*c2*" -o -iname "*codec2*" \) 2> /dev/null)
-if ! $C2_POLICY_PATCHED; then
-    if [ -n "$C2_POLICY_FIRST" ]; then
-        [ -n "$(tail -c1 "$C2_POLICY_FIRST")" ] && echo >> "$C2_POLICY_FIRST"
-        echo "mremap: 1" >> "$C2_POLICY_FIRST"
-        LOG "- Added mremap to $(basename "$C2_POLICY_FIRST")"
-    else
-        LOGW "No Codec2 seccomp policy found in vendor/etc/seccomp_policy"
-    fi
-fi
-unset C2_POLICY_FIRST C2_POLICY_PATCHED
-LOG_STEP_OUT
+
 
 LOG_STEP_IN "- Removing 24-bit deep_buffer output (fixes no media sound on speaker)"
 sed -i '/<mixPort name="deep_buffer"/,/<\/mixPort>/d' "$WORK_DIR/vendor/etc/audio_policy_configuration_base.xml"

@@ -3,8 +3,8 @@
     DELETE_FROM_WORK_DIR "system" "system/apex/com.google.android.art_compressed.apex"
     
     
-    LOG_STEP_IN "- Adding S23 FE (r11qxxx) lib/ blobs"
-    ADD_TO_WORK_DIR "r11qxxx" "system" "system/lib" 0 0 644
+    LOG_STEP_IN "- Adding S23 (dm1qxxx) lib/ blobs"
+    ADD_TO_WORK_DIR "dm1qxxx" "system" "system/lib" 0 0 644
 
     BLOBS_LIST="
     system/apex/com.android.i18n.apex
@@ -15,7 +15,7 @@
     "
     for blob in $BLOBS_LIST
     do
-        ADD_TO_WORK_DIR "r11qxxx" "system" "$blob"
+        ADD_TO_WORK_DIR "dm1qxxx" "system" "$blob"
     done
     LOG_STEP_OUT
 

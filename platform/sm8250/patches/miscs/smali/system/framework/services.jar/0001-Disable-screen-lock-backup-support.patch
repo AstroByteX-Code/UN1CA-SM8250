@@ -8,10 +8,10 @@ Signed-off-by: Samuel Pascua <pascua.samuel.14@gmail.com>
  .../locksettings/LockSettingsService.smali    | 29 +------------------
  1 file changed, 1 insertion(+), 28 deletions(-)
 
-diff --git a/smali/com/android/server/locksettings/LockSettingsService.smali b/smali/com/android/server/locksettings/LockSettingsService.smali
+diff --git a/smali/com/android/server/locksettings/LockSettingsService.smali b/smali_classes2/com/android/server/locksettings/LockSettingsService.smali
 index fa354672..bc561b27 100644
---- a/smali/com/android/server/locksettings/LockSettingsService.smali
-+++ b/smali/com/android/server/locksettings/LockSettingsService.smali
+--- a/smali_classes2/com/android/server/locksettings/LockSettingsService.smali
++++ b/smali_classes2/com/android/server/locksettings/LockSettingsService.smali
 @@ -1281,38 +1281,11 @@
  .end method
  

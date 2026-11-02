@@ -1,4 +1,4 @@
 id=encryption
-name=FBEv2 support
-author=ata-kaner
-description=Adds FBEv2 support.
+name=disable encryption
+author=Code_by_Mian
+description=Disable samsung encryption.

@@ -66,7 +66,12 @@ LOG_STEP_OUT
 LOG_STEP_IN "- Removing HDR10+ check"
 
 if [ -f "$WORK_DIR/system/system/lib64/libstagefright.so" ]; then
-    if xxd -p -c 0 "$WORK_DIR/system/system/lib64/libstagefright.so" | grep -q "010140f9cc9f059480480034"; then
+    if xxd -p -c 0 "$WORK_DIR/system/system/lib64/libstagefright.so" | grep -q "010140f9c8f5059440470034"; then
+        # Android 17 / One UI 9.0 (S928B QSSI base): bypass HEVC HDR10+ abort in ACodec::setupVideoEncoder
+        HEX_PATCH "$WORK_DIR/system/system/lib64/libstagefright.so" \
+            "010140f9c8f5059440470034" \
+            "010140f91f2003d51f2003d5"
+    elif xxd -p -c 0 "$WORK_DIR/system/system/lib64/libstagefright.so" | grep -q "010140f9cc9f059480480034"; then
         # Android 16 (S928U1 / One UI 8.5 QSSI base): bypass HEVC HDR10+ abort in ACodec::setupVideoEncoder
         HEX_PATCH "$WORK_DIR/system/system/lib64/libstagefright.so" \
             "010140f9cc9f059480480034" \
@@ -95,8 +100,13 @@ if [ -f "$WORK_DIR/system/system/lib64/libstagefright.so" ]; then
             "810240f97ef9019421f5ffd021481091e00314aa0200805225fd0194"
     fi
 
+    # Android 17 / One UI 9.0: disable temporal SVC for HEVC encoder
+    if xxd -p -c 0 "$WORK_DIR/system/system/lib64/libstagefright.so" | grep -q "3f2f0071600000543f1f007141060054"; then
+        HEX_PATCH "$WORK_DIR/system/system/lib64/libstagefright.so" \
+            "3f2f0071600000543f1f007141060054" \
+            "3f2f00711f2003d53f1f007141060054"
     # Android 16: disable temporal SVC for HEVC encoder
-    if xxd -p -c 0 "$WORK_DIR/system/system/lib64/libstagefright.so" | grep -q "e10740b9e22340b9e00313aa44aa059420020034fa03002a"; then
+    elif xxd -p -c 0 "$WORK_DIR/system/system/lib64/libstagefright.so" | grep -q "e10740b9e22340b9e00313aa44aa059420020034fa03002a"; then
         HEX_PATCH "$WORK_DIR/system/system/lib64/libstagefright.so" \
             "e10740b9e22340b9e00313aa44aa059420020034fa03002a" \
             "e10740b9e22340b9e00313aa44aa059411000014fa03002a"
@@ -113,21 +123,5 @@ if [ -f "$WORK_DIR/vendor/lib/libstagefright_bufferqueue_helper_vendor.so" ] && 
         "d7e94601401b71eb060000bf"
     LOG_STEP_OUT
 fi
-
-# Fix device model number in photo/video metadata
-LOG_STEP_IN "- Fixing camera metadata device model string"
-while IFS= read -r f; do
-    HEX_PATCH "$f" \
-        "726f2e70726f647563742e6d6f64656c00" \
-        "726f2e626f6f742e656d2e6d6f64656c00"
-done < <(grep -r -w -l "ro.product.model" "$WORK_DIR/vendor" 2>/dev/null | grep "camera")
-
-if [ -f "$WORK_DIR/system/system/lib/libstagefright.so" ] && \
-        xxd -p -c 0 "$WORK_DIR/system/system/lib/libstagefright.so" | grep -q "726f2e70726f647563742e6d6f64656c00"; then
-    HEX_PATCH "$WORK_DIR/system/system/lib/libstagefright.so" \
-        "726f2e70726f647563742e6d6f64656c00" \
-        "726f2e626f6f742e656d2e6d6f64656c00"
-fi
-LOG_STEP_OUT
 
 

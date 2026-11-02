@@ -13,7 +13,7 @@ done
 
 LOG_STEP_IN "- Adding stock SoundBooster libs"
 ADD_TO_WORK_DIR "$TARGET_FIRMWARE" "system" "system/lib/lib_SoundBooster_ver1050.so" 0 0 644 "u:object_r:system_lib_file:s0"
-DELETE_FROM_WORK_DIR "system" "system/lib/lib_SoundBooster_ver2000.so"
+DELETE_FROM_WORK_DIR "system" "system/lib/lib_SoundBooster_ver1100.so"
 ADD_TO_WORK_DIR "$TARGET_FIRMWARE" "system" "system/lib/lib_SoundAlive_play_plus_ver400.so" 0 0 644 "u:object_r:system_lib_file:s0"
 DELETE_FROM_WORK_DIR "system" "system/lib/lib_SoundAlive_play_plus_ver800.so"
 ADD_TO_WORK_DIR "$TARGET_FIRMWARE" "system" "system/lib/libaudiosaplus_sec_legacy.so" 0 0 644 "u:object_r:system_lib_file:s0"
