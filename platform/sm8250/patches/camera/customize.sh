@@ -40,6 +40,14 @@ do
     ADD_TO_WORK_DIR "p3qxxx" "system" "$blob" 0 0 644 "u:object_r:system_lib_file:s0" &
 done
 
+LOG_STEP_IN "- Fixing MIDAS, AI and camera"
+ADD_TO_WORK_DIR "a73xqxx" "system" "system/lib64/libSlowShutter_jni.media.samsung.so" 0 0 644 "u:object_r:system_lib_file:s0"
+ADD_TO_WORK_DIR "a73xqxx" "system" "system/lib64/lib_nativeJni.dk.samsung.so" 0 0 644 "u:object_r:system_lib_file:s0"
+ADD_TO_WORK_DIR "a73xqxx" "system" "system/lib64/libsamsung_videoengine_9_0.so" 0 0 644 "u:object_r:system_lib_file:s0"
+ADD_TO_WORK_DIR "a73xqxx" "system" "system/lib64/libtensorflowLite.camera.samsung.so" 0 0 644 "u:object_r:system_lib_file:s0"
+ADD_TO_WORK_DIR "a73xqxx" "system" "system/lib64/libtensorflowlite_inference_api.camera.samsung.so" 0 0 644 "u:object_r:system_lib_file:s0"
+LOG_STEP_OUT
+
 
 LOG_STEP_IN "- Adding dm3qxxx NightMode libs"
 ADD_TO_WORK_DIR "dm3qxxx" "system" "system/lib64/libSwIsp_core.camera.samsung.so" 0 0 644 "u:object_r:system_lib_file:s0"
