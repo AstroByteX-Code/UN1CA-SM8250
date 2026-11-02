@@ -234,4 +234,44 @@ sed -i '$d' "$WORK_DIR/vendor/etc/permissions/handheld_core_hardware.xml"
     echo "</permissions>"
 } >> "$WORK_DIR/vendor/etc/permissions/handheld_core_hardware.xml"
 
+# Add Android 16/17 CgroupKill profile if missing.
+if [ -f "$CGROUP_TASK_PROFILES" ] && \
+        ! grep -q '"Name": "CgroupKill"' "$CGROUP_TASK_PROFILES"; then
+
+    CGROUP_TASK_PROFILES_TMP="$CGROUP_TASK_PROFILES.tmp"
+
+    awk '
+        /^    \{$/ { pending = $0; next }
+        pending != "" && /^      "Name": "CgroupProcs"/ {
+            print "    {"
+            print "      \"Name\": \"CgroupKill\","
+            print "      \"Controller\": \"cgroup2\","
+            print "      \"File\": \"cgroup.kill\""
+            print "    },"
+            print pending
+            pending = ""
+        }
+        pending != "" { print pending; pending = "" }
+        { print }
+        END { if (pending != "") print pending }
+    ' "$CGROUP_TASK_PROFILES" > "$CGROUP_TASK_PROFILES_TMP" && \
+        mv "$CGROUP_TASK_PROFILES_TMP" "$CGROUP_TASK_PROFILES" || return 1
+fi
+
+# Keep target vendor libchrome.so.
+# Import source copy only when missing.
+
+CGROUP_SOURCE_FIRMWARE_PATH="$(cut -d "/" -f 1 -s <<< "$SOURCE_FIRMWARE")_$(cut -d "/" -f 2 -s <<< "$SOURCE_FIRMWARE")"
+CGROUP_SOURCE_DIR="$FW_DIR/$CGROUP_SOURCE_FIRMWARE_PATH"
+
+if [ ! -f "$WORK_DIR/vendor/lib64/libchrome.so" ] && \
+        [ -f "$CGROUP_SOURCE_DIR/vendor/lib64/libchrome.so" ]; then
+    ADD_TO_WORK_DIR "$CGROUP_SOURCE_DIR" "vendor" "lib64/libchrome.so" || return 1
+fi
+
+LOG "  - Applied minimal cgroup compatibility tweaks"
+
+LOG_STEP_OUT
+
+
 unset PLAT_SE ION_R ION_RW ION_DOM ION_APP ION_CIL
