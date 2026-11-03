@@ -20,6 +20,11 @@ PRODUCT_DEBLOAT+="
 priv-app/Velvet
 "
 
+#Auto Blocker
+SYSTEM_DEBLOAT+="
+system/app//Rampart
+"
+
 # GameDriver
 SYSTEM_DEBLOAT+="
 system/priv-app/GameDriver-SM8650
