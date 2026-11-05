@@ -1,6 +1,6 @@
-KERNEL_REPO="https://github.com/AstroByteX-Code/not_samsung.sm8250-4.19/releases/download/Not-z3q-20261027-200917"
+KERNEL_REPO="https://github.com/AstroByteX-Code/not_samsung.sm8250-4.19/releases/download/Zeno-z3q-20261103-063736"
 
-LOG_STEP_IN "- Downloading Not kernel"
+LOG_STEP_IN "- Downloading Zeno kernel"
 if [ -f "$WORK_DIR/kernel/boot.img" ]; then
     rm -f "$WORK_DIR/kernel/boot.img"
 fi
