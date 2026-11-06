@@ -244,17 +244,29 @@ if $SOURCE_BLUETOOTH_SUPPORT_XLNA_CONTROL; then
     if ! $TARGET_BLUETOOTH_SUPPORT_XLNA_CONTROL; then
         DECODE_APK_IN_APEX "$BT_APK"
         LOG "- Applying \"Disable SUPPORT_XLNA_CONTROL support\" to apex_payload/$BT_APK_REL"
+        if [ -f "$APKTOOL_DIR/$BT_APK_WORK_PATH/smali/com/android/bluetooth/le_scan/ScanManager\$ScanNative.smali" ]; then
+            XLNA_PATCH="$MODPATH/xlna/Bluetooth.apk/0001-Disable-SUPPORT_XLNA_CONTROL-support.patch"
+        else
+            XLNA_PATCH="$MODPATH/xlna/Bluetooth.apk/0001-Disable-SUPPORT_XLNA_CONTROL-support-ScanManager.patch"
+        fi
         APPLY_PATCH "system" "$BT_APK_WORK_PATH" \
-            "$MODPATH/xlna/Bluetooth.apk/0001-Disable-SUPPORT_XLNA_CONTROL-support.patch" \
+            "$XLNA_PATCH" \
             > /dev/null
+        unset XLNA_PATCH
     fi
 else
     if $TARGET_BLUETOOTH_SUPPORT_XLNA_CONTROL; then
         DECODE_APK_IN_APEX "$BT_APK"
         LOG "- Applying \"Enable SUPPORT_XLNA_CONTROL support\" to apex_payload/$BT_APK_REL"
+        if [ -f "$APKTOOL_DIR/$BT_APK_WORK_PATH/smali/com/android/bluetooth/le_scan/ScanManager\$ScanNative.smali" ]; then
+            XLNA_PATCH="$MODPATH/xlna/Bluetooth.apk/0001-Enable-SUPPORT_XLNA_CONTROL-support.patch"
+        else
+            XLNA_PATCH="$MODPATH/xlna/Bluetooth.apk/0001-Enable-SUPPORT_XLNA_CONTROL-support-ScanManager.patch"
+        fi
         APPLY_PATCH "system" "$BT_APK_WORK_PATH" \
-            "$MODPATH/xlna/Bluetooth.apk/0001-Enable-SUPPORT_XLNA_CONTROL-support.patch" \
+            "$XLNA_PATCH" \
             > /dev/null
+        unset XLNA_PATCH
     fi
 fi
 
