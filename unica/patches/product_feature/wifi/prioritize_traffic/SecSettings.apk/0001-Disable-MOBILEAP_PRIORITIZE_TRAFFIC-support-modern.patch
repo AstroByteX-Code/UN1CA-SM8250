@@ -1,0 +1,31 @@
+Subject: [PATCH] Disable MOBILEAP_PRIORITIZE_TRAFFIC in modern SecSettings
+
+diff --git a/smali_classes4/com/samsung/android/settings/wifi/mobileap/smartpriority/WifiApSmartPrioritySwitchController.smali b/smali_classes4/com/samsung/android/settings/wifi/mobileap/smartpriority/WifiApSmartPrioritySwitchController.smali
+--- a/smali_classes4/com/samsung/android/settings/wifi/mobileap/smartpriority/WifiApSmartPrioritySwitchController.smali
++++ b/smali_classes4/com/samsung/android/settings/wifi/mobileap/smartpriority/WifiApSmartPrioritySwitchController.smali
+@@ -87,20 +87,7 @@
+ .method public getAvailabilityStatus()I
+-    .locals 0
+-
+-    iget-object p0, p0, Lcom/samsung/android/settings/wifi/mobileap/smartpriority/WifiApSmartPrioritySwitchController;->mContext:Landroid/content/Context;
+-
+-    invoke-static {p0}, Lcom/samsung/android/settings/wifi/mobileap/utils/WifiApFeatureUtils;->isMobileDataUsageSupported(Landroid/content/Context;)Z
+-
+-    move-result p0
+-
+-    if-eqz p0, :cond_0
+-
+-    const/4 p0, 0x0
+-
+-    return p0
+-
+-    :cond_0
+-    const/4 p0, 0x3
+-
+-    return p0
++    .locals 0
++
++    const/4 p0, 0x3
++
++    return p0
+ .end method

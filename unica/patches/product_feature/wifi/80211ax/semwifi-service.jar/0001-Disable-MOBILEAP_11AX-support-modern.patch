@@ -1,0 +1,31 @@
+Subject: [PATCH] Disable MOBILEAP_11AX support (modern semwifi-service layout)
+
+diff --git a/smali/com/samsung/android/server/wifi/ap/SemSoftApConfiguration.smali b/smali/com/samsung/android/server/wifi/ap/SemSoftApConfiguration.smali
+--- a/smali/com/samsung/android/server/wifi/ap/SemSoftApConfiguration.smali
++++ b/smali/com/samsung/android/server/wifi/ap/SemSoftApConfiguration.smali
+@@ -2029,5 +2029,5 @@
+     invoke-virtual {v0, v1}, Ljava/lang/StringBuffer;->append(Ljava/lang/String;)Ljava/lang/StringBuffer;
+ 
+-    const-string v1, "SPF_Enhanced=true\nSPF_Enhanced_Menu=d2d\nSPF_Guest=lite\nSPF_MobileAp=true\nSPF_Concurrency=true\nSPF_11ax=true\nSPF_6G=true\nSPF_Dongle=false\nSPF_DualAp=true\n"
++    const-string v1, "SPF_Enhanced=true\nSPF_Enhanced_Menu=d2d\nSPF_Guest=lite\nSPF_MobileAp=true\nSPF_Concurrency=true\nSPF_11ax=false\nSPF_6G=true\nSPF_Dongle=false\nSPF_DualAp=true\n"
+ 
+     invoke-virtual {v0, v1}, Ljava/lang/StringBuffer;->append(Ljava/lang/String;)Ljava/lang/StringBuffer;
+diff --git a/smali/com/samsung/android/server/wifi/ap/SemWifiApChipInfo.smali b/smali/com/samsung/android/server/wifi/ap/SemWifiApChipInfo.smali
+--- a/smali/com/samsung/android/server/wifi/ap/SemWifiApChipInfo.smali
++++ b/smali/com/samsung/android/server/wifi/ap/SemWifiApChipInfo.smali
+@@ -1719,5 +1719,5 @@
+     const/4 v0, 0x1
+ 
+-    if-eq p1, v0, :cond_2
++    if-eq p1, v0, :cond_3
+ 
+     const/4 v1, 0x2
+@@ -1755,4 +1755,8 @@
+     :cond_2
+     :goto_0
+     return v0
++
++    :cond_3
++    const/4 p0, 0x0
++    return p0
+ .end method

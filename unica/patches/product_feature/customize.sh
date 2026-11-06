@@ -414,65 +414,69 @@ if [[ "$SOURCE_FINGERPRINT_CONFIG_SENSOR" != "$TARGET_FINGERPRINT_CONFIG_SENSOR"
             if [[ "$(GET_FINGERPRINT_SENSOR_TYPE "$TARGET_FINGERPRINT_CONFIG_SENSOR")" == "optical" ]]; then
                 SOURCE_FINGERPRINT_CONFIG_SENSOR="google_touch_display_optical,settings=3"
 
-                if [[ "$TARGET_OS_SINGLE_SYSTEM_IMAGE" == "qssi" ]]; then
-                    ADD_TO_WORK_DIR "r9qxxx" "system" "system/bin/surfaceflinger" 0 2000 755 "u:object_r:surfaceflinger_exec:s0"
-                    # Ensure IQtiComposer support (pre-API 36)
-                    # Check unica/patches/legacy/customize.sh for more info.
-                    if [ "$TARGET_PLATFORM_SDK_VERSION" -lt "36" ]; then
-                        if ! grep -q -r "IQtiComposer" "$WORK_DIR/vendor/etc/vintf"; then
-                            # [b.lt #0x72914c] -> [nop]
-                            HEX_PATCH "$WORK_DIR/system/system/bin/surfaceflinger" "9f8a00712b03005400068052" "9f8a00711f2003d500068052"
+                if [[ "$TARGET_CODENAME" == "r8q" ]]; then
+                    LOG "Skipping optical FOD compatibility patches for r8q"
+                else
+                    if [[ "$TARGET_OS_SINGLE_SYSTEM_IMAGE" == "qssi" ]]; then
+                        ADD_TO_WORK_DIR "r9qxxx" "system" "system/bin/surfaceflinger" 0 2000 755 "u:object_r:surfaceflinger_exec:s0"
+                        # Ensure IQtiComposer support (pre-API 36)
+                        # Check unica/patches/legacy/customize.sh for more info.
+                        if [ "$TARGET_PLATFORM_SDK_VERSION" -lt "36" ]; then
+                            if ! grep -q -r "IQtiComposer" "$WORK_DIR/vendor/etc/vintf"; then
+                                # [b.lt #0x72914c] -> [nop]
+                                HEX_PATCH "$WORK_DIR/system/system/bin/surfaceflinger" "9f8a00712b03005400068052" "9f8a00711f2003d500068052"
+                            fi
                         fi
+                        ADD_TO_WORK_DIR "r9qxxx" "system" "system/lib/libgui.so" 0 0 644 "u:object_r:system_lib_file:s0"
+                        ADD_TO_WORK_DIR "r9qxxx" "system" "system/lib/libui.so" 0 0 644 "u:object_r:system_lib_file:s0"
+                        ADD_TO_WORK_DIR "r9qxxx" "system" "system/lib64/libgui.so" 0 0 644 "u:object_r:system_lib_file:s0"
+                        ADD_TO_WORK_DIR "r9qxxx" "system" "system/lib64/libui.so" 0 0 644 "u:object_r:system_lib_file:s0"
+                    elif [[ "$TARGET_OS_SINGLE_SYSTEM_IMAGE" == "essi" ]]; then
+                        ADD_TO_WORK_DIR "r9sxxx" "system" "system/bin/surfaceflinger" 0 2000 755 "u:object_r:surfaceflinger_exec:s0"
+                        ADD_TO_WORK_DIR "r9sxxx" "system" "system/lib/libgui.so" 0 0 644 "u:object_r:system_lib_file:s0"
+                        ADD_TO_WORK_DIR "r9sxxx" "system" "system/lib/libui.so" 0 0 644 "u:object_r:system_lib_file:s0"
+                        ADD_TO_WORK_DIR "r9sxxx" "system" "system/lib64/libgui.so" 0 0 644 "u:object_r:system_lib_file:s0"
+                        ADD_TO_WORK_DIR "r9sxxx" "system" "system/lib64/libui.so" 0 0 644 "u:object_r:system_lib_file:s0"
+                    else
+                        ABORT "Unknown SSI: $TARGET_OS_SINGLE_SYSTEM_IMAGE"
                     fi
-                    ADD_TO_WORK_DIR "r9qxxx" "system" "system/lib/libgui.so" 0 0 644 "u:object_r:system_lib_file:s0"
-                    ADD_TO_WORK_DIR "r9qxxx" "system" "system/lib/libui.so" 0 0 644 "u:object_r:system_lib_file:s0"
-                    ADD_TO_WORK_DIR "r9qxxx" "system" "system/lib64/libgui.so" 0 0 644 "u:object_r:system_lib_file:s0"
-                    ADD_TO_WORK_DIR "r9qxxx" "system" "system/lib64/libui.so" 0 0 644 "u:object_r:system_lib_file:s0"
-                elif [[ "$TARGET_OS_SINGLE_SYSTEM_IMAGE" == "essi" ]]; then
-                    ADD_TO_WORK_DIR "r9sxxx" "system" "system/bin/surfaceflinger" 0 2000 755 "u:object_r:surfaceflinger_exec:s0"
-                    ADD_TO_WORK_DIR "r9sxxx" "system" "system/lib/libgui.so" 0 0 644 "u:object_r:system_lib_file:s0"
-                    ADD_TO_WORK_DIR "r9sxxx" "system" "system/lib/libui.so" 0 0 644 "u:object_r:system_lib_file:s0"
-                    ADD_TO_WORK_DIR "r9sxxx" "system" "system/lib64/libgui.so" 0 0 644 "u:object_r:system_lib_file:s0"
-                    ADD_TO_WORK_DIR "r9sxxx" "system" "system/lib64/libui.so" 0 0 644 "u:object_r:system_lib_file:s0"
-                else
-                    ABORT "Unknown SSI: $TARGET_OS_SINGLE_SYSTEM_IMAGE"
-                fi
 
-                ADD_TO_WORK_DIR "r9qxxx" "system" "system/priv-app/BiometricSetting/BiometricSetting.apk" 0 0 644 "u:object_r:system_file:s0"
+                    ADD_TO_WORK_DIR "r9qxxx" "system" "system/priv-app/BiometricSetting/BiometricSetting.apk" 0 0 644 "u:object_r:system_file:s0"
 
-                APPLY_PATCH "system" "system/framework/framework.jar" \
-                    "$MODPATH/fingerprint/optical_fod/framework.jar/0001-Add-optical-FOD-support.patch"
-                APPLY_PATCH "system" "system/framework/services.jar" \
-                    "$MODPATH/fingerprint/optical_fod/services.jar/0001-Add-optical-FOD-support.patch"
+                    APPLY_PATCH "system" "system/framework/framework.jar" \
+                        "$MODPATH/fingerprint/optical_fod/framework.jar/0001-Add-optical-FOD-support.patch"
+                    APPLY_PATCH "system" "system/framework/services.jar" \
+                        "$MODPATH/fingerprint/optical_fod/services.jar/0001-Add-optical-FOD-support.patch"
 
-                if $PRESERVE_NATIVE_FINGERPRINT_UI; then
-                    # The old app patches were generated from the first
-                    # Android 16 implementation.  Current Settings/SystemUI
-                    # already consume the optical feature exposed above and
-                    # their classes/control flow have since been redesigned.
-                    LOG "Using native Android 16 optical fingerprint UI"
-                else
-                    APPLY_PATCH "system" "system/priv-app/SecSettings/SecSettings.apk" \
-                        "$MODPATH/fingerprint/optical_fod/SecSettings.apk/0001-Add-optical-FOD-support.patch"
-                    APPLY_PATCH "system_ext" "priv-app/SystemUI/SystemUI.apk" \
-                        "$MODPATH/fingerprint/optical_fod/SystemUI.apk/0001-Add-optical-FOD-support.patch"
-                fi
+                    if $PRESERVE_NATIVE_FINGERPRINT_UI; then
+                        # The old app patches were generated from the first
+                        # Android 16 implementation.  Current Settings/SystemUI
+                        # already consume the optical feature exposed above and
+                        # their classes/control flow have since been redesigned.
+                        LOG "Using native Android 16 optical fingerprint UI"
+                    else
+                        APPLY_PATCH "system" "system/priv-app/SecSettings/SecSettings.apk" \
+                            "$MODPATH/fingerprint/optical_fod/SecSettings.apk/0001-Add-optical-FOD-support.patch"
+                        APPLY_PATCH "system_ext" "priv-app/SystemUI/SystemUI.apk" \
+                            "$MODPATH/fingerprint/optical_fod/SystemUI.apk/0001-Add-optical-FOD-support.patch"
+                    fi
 
-                if [[ "$TARGET_FINGERPRINT_CONFIG_SENSOR" == *"no_delay_in_screen_off"* ]]; then
-                    APPLY_PATCH "system" "system/priv-app/BiometricSetting/BiometricSetting.apk" \
-                        "$MODPATH/fingerprint/optical_fod/BiometricSetting.apk/0001-Enable-FP_FEATURE_NO_DELAY_IN_SCREEN_OFF.patch"
-                fi
+                    if [[ "$TARGET_FINGERPRINT_CONFIG_SENSOR" == *"no_delay_in_screen_off"* ]]; then
+                        APPLY_PATCH "system" "system/priv-app/BiometricSetting/BiometricSetting.apk" \
+                            "$MODPATH/fingerprint/optical_fod/BiometricSetting.apk/0001-Enable-FP_FEATURE_NO_DELAY_IN_SCREEN_OFF.patch"
+                    fi
 
-                if [[ "$TARGET_FINGERPRINT_CONFIG_SENSOR" == *"transition_effect_on"* ]]; then
-                    SMALI_PATCH "system" "system/framework/framework.jar" \
-                        "smali_classes2/android/hardware/fingerprint/FingerprintManager.smali" "return" \
-                        "semGetTransitionEffectValue()I" \
-                        "1"
-                elif [[ "$TARGET_FINGERPRINT_CONFIG_SENSOR" == *"transition_effect_off"* ]]; then
-                    SMALI_PATCH "system" "system/framework/framework.jar" \
-                        "smali_classes2/android/hardware/fingerprint/FingerprintManager.smali" "return" \
-                        "semGetTransitionEffectValue()I" \
-                        "0"
+                    if [[ "$TARGET_FINGERPRINT_CONFIG_SENSOR" == *"transition_effect_on"* ]]; then
+                        SMALI_PATCH "system" "system/framework/framework.jar" \
+                            "smali_classes2/android/hardware/fingerprint/FingerprintManager.smali" "return" \
+                            "semGetTransitionEffectValue()I" \
+                            "1"
+                    elif [[ "$TARGET_FINGERPRINT_CONFIG_SENSOR" == *"transition_effect_off"* ]]; then
+                        SMALI_PATCH "system" "system/framework/framework.jar" \
+                            "smali_classes2/android/hardware/fingerprint/FingerprintManager.smali" "return" \
+                            "semGetTransitionEffectValue()I" \
+                            "0"
+                    fi
                 fi
             elif [[ "$(GET_FINGERPRINT_SENSOR_TYPE "$TARGET_FINGERPRINT_CONFIG_SENSOR")" == "side" ]]; then
                 SOURCE_FINGERPRINT_CONFIG_SENSOR="google_touch_side,navi=1"
@@ -826,8 +830,12 @@ if $SOURCE_LCD_SUPPORT_MDNIE_HW && [[ "$SOURCE_LCD_CONFIG_COLOR_WEAKNESS_SOLUTIO
             # synthetic lambda numbering from an older implementation.
             LOG "Using feature-gated Android 16 mDNIe services implementation"
         else
-            APPLY_PATCH "system" "system/framework/services.jar" \
-                "$MODPATH/mdnie/hw/services.jar/0001-Disable-HW-mDNIe.patch"
+            if [[ "$TARGET_CODENAME" == "r8q" ]]; then
+                LOG "Skipping HW mDNIe services patch for r8q"
+            else
+                APPLY_PATCH "system" "system/framework/services.jar" \
+                    "$MODPATH/mdnie/hw/services.jar/0001-Disable-HW-mDNIe.patch"
+            fi
         fi
     fi
 elif $SOURCE_LCD_SUPPORT_MDNIE_HW && [[ "$SOURCE_LCD_CONFIG_COLOR_WEAKNESS_SOLUTION" == "0" ]]; then
@@ -1163,8 +1171,20 @@ fi
 # SEC_PRODUCT_FEATURE_WLAN_SUPPORT_MOBILEAP_11AX
 if $SOURCE_WLAN_SUPPORT_MOBILEAP_11AX; then
     if ! $TARGET_WLAN_SUPPORT_MOBILEAP_11AX; then
+        SEMWIFI_APKTOOL="$APKTOOL_DIR/system/framework/semwifi-service.jar"
+        if awk '
+            /^\.method public static showSecProductFeature\(\)Ljava\/lang\/String;$/ { in_method = 1 }
+            in_method && /^    \.locals 4$/ { found = 1 }
+            in_method && /^\.end method$/ { exit }
+            END { exit !found }
+        ' "$SEMWIFI_APKTOOL/smali/com/samsung/android/server/wifi/ap/SemSoftApConfiguration.smali"; then
+            MOBILEAP_11AX_PATCH="$MODPATH/wifi/80211ax/semwifi-service.jar/0001-Disable-MOBILEAP_11AX-support-modern.patch"
+        else
+            MOBILEAP_11AX_PATCH="$MODPATH/wifi/80211ax/semwifi-service.jar/0001-Disable-MOBILEAP_11AX-support.patch"
+        fi
         APPLY_PATCH "system" "system/framework/semwifi-service.jar" \
-            "$MODPATH/wifi/80211ax/semwifi-service.jar/0001-Disable-MOBILEAP_11AX-support.patch"
+            "$MOBILEAP_11AX_PATCH"
+        unset SEMWIFI_APKTOOL MOBILEAP_11AX_PATCH
     fi
 else
     if $TARGET_WLAN_SUPPORT_MOBILEAP_11AX; then
@@ -1306,14 +1326,33 @@ if $SOURCE_WLAN_SUPPORT_MOBILEAP_PRIORITIZE_TRAFFIC; then
         DELETE_FROM_WORK_DIR "system" "system/app/MhsAiService"
         DELETE_FROM_WORK_DIR "system" "system/etc/xgb_mhs_l1.model"
 
+        SEMWIFI_APKTOOL="$APKTOOL_DIR/system/framework/semwifi-service.jar"
+        if awk '
+            /^\.method public resetHotspotSettings\(\)V$/ { in_method = 1 }
+            in_method && /^    \.locals 6$/ { found = 1 }
+            in_method && /^\.end method$/ { exit }
+            END { exit !found }
+        ' "$SEMWIFI_APKTOOL/smali/com/samsung/android/server/wifi/ap/SemSettingsSoftResetHandler.smali"; then
+            MOBILEAP_PRIORITY_PATCH="$MODPATH/wifi/prioritize_traffic/semwifi-service.jar/0001-Disable-MOBILEAP_PRIORITIZE_TRAFFIC-support-modern.patch"
+        else
+            MOBILEAP_PRIORITY_PATCH="$MODPATH/wifi/prioritize_traffic/semwifi-service.jar/0001-Disable-MOBILEAP_PRIORITIZE_TRAFFIC-support.patch"
+        fi
         APPLY_PATCH "system" "system/framework/semwifi-service.jar" \
-            "$MODPATH/wifi/prioritize_traffic/semwifi-service.jar/0001-Disable-MOBILEAP_PRIORITIZE_TRAFFIC-support.patch"
+            "$MOBILEAP_PRIORITY_PATCH"
+        unset SEMWIFI_APKTOOL MOBILEAP_PRIORITY_PATCH
         SMALI_PATCH "system" "system/framework/semwifi-service.jar" \
             "smali/com/samsung/android/server/wifi/ap/SemSoftApConfiguration.smali" "replaceall" \
             "SPF_Prio_Traffic=true" \
             "SPF_Prio_Traffic=false"
+        SEC_SETTINGS_APKTOOL="$APKTOOL_DIR/system/priv-app/SecSettings/SecSettings.apk"
+        if [ -f "$SEC_SETTINGS_APKTOOL/smali_classes4/com/samsung/android/settings/wifi/mobileap/smartpriority/WifiApSmartPrioritySwitchController.smali" ]; then
+            MOBILEAP_PRIORITY_SETTINGS_PATCH="$MODPATH/wifi/prioritize_traffic/SecSettings.apk/0001-Disable-MOBILEAP_PRIORITIZE_TRAFFIC-support-modern.patch"
+        else
+            MOBILEAP_PRIORITY_SETTINGS_PATCH="$MODPATH/wifi/prioritize_traffic/SecSettings.apk/0001-Disable-MOBILEAP_PRIORITIZE_TRAFFIC-support.patch"
+        fi
         APPLY_PATCH "system" "system/priv-app/SecSettings/SecSettings.apk" \
-            "$MODPATH/wifi/prioritize_traffic/SecSettings.apk/0001-Disable-MOBILEAP_PRIORITIZE_TRAFFIC-support.patch"
+            "$MOBILEAP_PRIORITY_SETTINGS_PATCH"
+        unset SEC_SETTINGS_APKTOOL MOBILEAP_PRIORITY_SETTINGS_PATCH
     fi
 else
     if $TARGET_WLAN_SUPPORT_MOBILEAP_PRIORITIZE_TRAFFIC; then
