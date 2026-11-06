@@ -2,10 +2,6 @@
 .super Lcom/android/settings/SettingsPreferenceFragment;
 .source "HideDeveloperStatusFragment.java"
 
-# interfaces
-.implements Landroid/widget/CompoundButton$OnCheckedChangeListener;
-
-
 # instance fields
 .field public mAppPickerView:Landroidx/picker/widget/SeslAppPickerListView;
 
@@ -14,8 +10,6 @@
 .field public final mHideDeveloperStatusUtils:Lio/mesalabs/unica/HideDeveloperStatusUtils;
 
 .field public mLoadingViewController:Lcom/android/settings/widget/LoadingViewController;
-
-.field public mSwitchBar:Lcom/android/settings/widget/SettingsMainSwitchBar;
 
 .field public mUserManager:Landroid/os/UserManager;
 
@@ -90,22 +84,6 @@
     goto :goto_0
 
     :cond_0
-    return-void
-.end method
-
-.method public final onCheckedChanged(Landroid/widget/CompoundButton;Z)V
-    .locals 0
-
-    iget-object p0, p0, Lio/mesalabs/unica/settings/spoof/HideDeveloperStatusFragment;->mContext:Landroid/content/Context;
-
-    invoke-virtual {p0}, Landroid/content/Context;->getContentResolver()Landroid/content/ContentResolver;
-
-    move-result-object p0
-
-    const-string p1, "unica_hide_dev"
-
-    invoke-static {p0, p1, p2}, Landroid/provider/Settings$System;->putInt(Landroid/content/ContentResolver;Ljava/lang/String;I)Z
-
     return-void
 .end method
 
@@ -249,63 +227,14 @@
 
     iput-object v1, p0, Lio/mesalabs/unica/settings/spoof/HideDeveloperStatusFragment;->mLoadingViewController:Lcom/android/settings/widget/LoadingViewController;
 
-    invoke-virtual {p0}, Landroidx/fragment/app/Fragment;->getActivity()Landroidx/fragment/app/FragmentActivity;
-
-    move-result-object p1
-
-    check-cast p1, Lcom/android/settings/SettingsActivity;
-
-    iget-object p1, p1, Lcom/android/settings/SettingsActivity;->mMainSwitch:Lcom/android/settings/widget/SettingsMainSwitchBar;
-
-    iput-object p1, p0, Lio/mesalabs/unica/settings/spoof/HideDeveloperStatusFragment;->mSwitchBar:Lcom/android/settings/widget/SettingsMainSwitchBar;
-
-    iget-object p2, p0, Lio/mesalabs/unica/settings/spoof/HideDeveloperStatusFragment;->mContext:Landroid/content/Context;
-
-    invoke-virtual {p2}, Landroid/content/Context;->getContentResolver()Landroid/content/ContentResolver;
-
-    move-result-object p2
-
-    const-string v0, "unica_hide_dev"
-
-    const/4 v1, 0x0
-
-    invoke-static {p2, v0, v1}, Landroid/provider/Settings$System;->getInt(Landroid/content/ContentResolver;Ljava/lang/String;I)I
-
-    move-result p2
-
-    if-nez p2, :cond_2
-
-    goto :goto_0
-
-    :cond_2
-    const/4 v1, 0x1
-
-    :goto_0
-    invoke-virtual {p1, v1}, Lcom/android/settings/widget/SettingsMainSwitchBar;->setChecked(Z)V
-
-    iget-object p1, p0, Lio/mesalabs/unica/settings/spoof/HideDeveloperStatusFragment;->mSwitchBar:Lcom/android/settings/widget/SettingsMainSwitchBar;
-
-    invoke-virtual {p1, p0}, Lcom/samsung/android/settings/widget/SecMainSwitchBar;->addOnSwitchChangeListener(Landroid/widget/CompoundButton$OnCheckedChangeListener;)V
-
-    iget-object p0, p0, Lio/mesalabs/unica/settings/spoof/HideDeveloperStatusFragment;->mSwitchBar:Lcom/android/settings/widget/SettingsMainSwitchBar;
-
-    invoke-virtual {p0}, Landroidx/appcompat/widget/SeslSwitchBar;->show()V
-
     return-object p3
 .end method
 
 .method public final onDestroyView()V
-    .locals 1
+    .locals 0
 
     invoke-super {p0}, Landroidx/preference/PreferenceFragmentCompat;->onDestroyView()V
 
-    iget-object p0, p0, Lio/mesalabs/unica/settings/spoof/HideDeveloperStatusFragment;->mSwitchBar:Lcom/android/settings/widget/SettingsMainSwitchBar;
-
-    if-eqz p0, :cond_0
-
-    invoke-virtual {p0}, Landroidx/appcompat/widget/SeslSwitchBar;->hide()V
-
-    :cond_0
     return-void
 .end method
 
