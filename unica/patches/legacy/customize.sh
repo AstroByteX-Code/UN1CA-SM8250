@@ -122,16 +122,23 @@ BACKPORT_SF_PROPS
 # Support legacy Camera HAL (pre-API 34)
 # - Some legacy devices (e.g. r8q) expect GPS tags to be non-null
 # - Support legacy Scene detection camera feature
-if [ "$TARGET_PLATFORM_SDK_VERSION" -lt "34" ]; then
-    PATCHED=true
-    APPLY_PATCH "system" "system/framework/framework.jar" \
-        "$MODPATH/camera/framework.jar/0001-Backport-legacy-CameraMetadataNative-code.patch"
-    if $TARGET_CAMERA_SUPPORT_MASS_APP_FLAVOR; then
-        APPLY_PATCH "system" "system/priv-app/SamsungCamera/SamsungCamera.apk" \
-            "$MODPATH/camera_mass/SamsungCamera.apk/0001-Backport-legacy-Scene-detection-code.patch"
+
+if [ "$TARGET_PLATFORM_SDK_VERSION" -lt 34 ]; then
+    if [[ "$TARGET_CODENAME" == "r8q" ]]; then
+        LOG "Skipping camera legacy patches for r8q"
     else
-        APPLY_PATCH "system" "system/priv-app/SamsungCamera/SamsungCamera.apk" \
-            "$MODPATH/camera/SamsungCamera.apk/0001-Backport-legacy-Scene-detection-code.patch"
+        PATCHED=true
+
+        APPLY_PATCH "system" "system/framework/framework.jar" \
+            "$MODPATH/camera/framework.jar/0001-Backport-legacy-CameraMetadataNative-code.patch"
+
+        if $TARGET_CAMERA_SUPPORT_MASS_APP_FLAVOR; then
+            APPLY_PATCH "system" "system/priv-app/SamsungCamera/SamsungCamera.apk" \
+                "$MODPATH/camera_mass/SamsungCamera.apk/0001-Backport-legacy-Scene-detection-code.patch"
+        else
+            APPLY_PATCH "system" "system/priv-app/SamsungCamera/SamsungCamera.apk" \
+                "$MODPATH/camera/SamsungCamera.apk/0001-Backport-legacy-Scene-detection-code.patch"
+        fi
     fi
 fi
 
@@ -460,38 +467,48 @@ if [ "$TARGET_PLATFORM_SDK_VERSION" -lt "35" ] && [ "$TARGET_PLATFORM" != "exyno
 fi
 
 # Support OMX hardware video codecs (pre-API 35)
-# https://android.googlesource.com/platform/frameworks/av/+/android-16.0.0_r2/media/libstagefright/omx/OMXNodeInstance.cpp#1687
+
 if [ "$TARGET_PLATFORM_SDK_VERSION" -lt "35" ]; then
-    if ! find "$WORK_DIR/vendor/etc" -maxdepth 1 -type f -name "media_codecs*.xml" ! -name "*performance*" -exec cat {} + | \
+    if [[ "$TARGET_CODENAME" == "r8q" ]]; then
+        LOG "Skipping cameraOMX patches for r8q"
+    else
+        if ! find "$WORK_DIR/vendor/etc" -maxdepth 1 -type f -name "media_codecs*.xml" ! -name "*performance*" -exec cat {} + | \
             grep -q -P -z '<MediaCodec\s[^>]*name="c2\.(?!android\.|sec\.)[^"]*"(?:(?!</?MediaCodec[\s>])[\s\S])*?="video/'; then
-        PATCHED=true
-        SMALI_PATCH "system" "system/app/MotionPhoto/MotionPhoto.apk" \
-            "smali/com/samsung/android/motionphoto/utils/v2/video/transcoding/VideoTrackTranscoder.smali" "replace" \
-            'getVideoEncodingFormat(Lcom/samsung/android/motionphoto/utils/v2/video/VideoTranscodingTask;)Landroid/media/MediaFormat;' \
-            'const v1, 0x7f420888' \
-            'const v1, 0x7f000789'
-        SMALI_PATCH "system" "system/app/MotionPhoto/MotionPhoto.apk" \
-            "smali/com/samsung/android/sum/core/filter/EncoderFilter.smali" "replace" \
-            'configCodec(Lcom/samsung/android/sum/core/message/Message;)V' \
-            'const v4, 0x7f420888' \
-            'const v4, 0x7f000789'
-        if [ -f "$WORK_DIR/system/system/priv-app/GlobalPostProcMgr/GlobalPostProcMgr.apk" ]; then
-            SMALI_PATCH "system" "system/priv-app/GlobalPostProcMgr/GlobalPostProcMgr.apk" \
+
+            PATCHED=true
+
+            SMALI_PATCH "system" "system/app/MotionPhoto/MotionPhoto.apk" \
+                "smali/com/samsung/android/motionphoto/utils/v2/video/transcoding/VideoTrackTranscoder.smali" "replace" \
+                'getVideoEncodingFormat(Lcom/samsung/android/motionphoto/utils/v2/video/VideoTranscodingTask;)Landroid/media/MediaFormat;' \
+                'const v1, 0x7f420888' \
+                'const v1, 0x7f000789'
+
+            SMALI_PATCH "system" "system/app/MotionPhoto/MotionPhoto.apk" \
                 "smali/com/samsung/android/sum/core/filter/EncoderFilter.smali" "replace" \
                 'configCodec(Lcom/samsung/android/sum/core/message/Message;)V' \
-                'const v3, 0x7f420888' \
-                'const v3, 0x7f000789'
+                'const v4, 0x7f420888' \
+                'const v4, 0x7f000789'
+
+            if [ -f "$WORK_DIR/system/system/priv-app/GlobalPostProcMgr/GlobalPostProcMgr.apk" ]; then
+                SMALI_PATCH "system" "system/priv-app/GlobalPostProcMgr/GlobalPostProcMgr.apk" \
+                    "smali/com/samsung/android/sum/core/filter/EncoderFilter.smali" "replace" \
+                    'configCodec(Lcom/samsung/android/sum/core/message/Message;)V' \
+                    'const v3, 0x7f420888' \
+                    'const v3, 0x7f000789'
+            fi
+
+            SMALI_PATCH "system" "system/priv-app/SamsungCamera/SamsungCamera.apk" \
+                "smali_classes3/com/samsung/android/sum/core/filter/EncoderFilter.smali" "replace" \
+                'configCodec(Lcom/samsung/android/sum/core/message/Message;)V' \
+                'const v4, 0x7f420888' \
+                'const v4, 0x7f000789'
+
+            SMALI_PATCH "system" "system/priv-app/vexfwk_service/vexfwk_service.apk" \
+                "smali/com/samsung/android/sum/core/filter/EncoderFilter.smali" "replace" \
+                'configCodec(Lcom/samsung/android/sum/core/message/Message;)V' \
+                'const v2, 0x7f420888' \
+                'const v2, 0x7f000789'
         fi
-        SMALI_PATCH "system" "system/priv-app/SamsungCamera/SamsungCamera.apk" \
-            "smali_classes4/com/samsung/android/sum/core/filter/EncoderFilter.smali" "replace" \
-            'configCodec(Lcom/samsung/android/sum/core/message/Message;)V' \
-            'const v4, 0x7f420888' \
-            'const v4, 0x7f000789'
-        SMALI_PATCH "system" "system/priv-app/vexfwk_service/vexfwk_service.apk" \
-            "smali/com/samsung/android/sum/core/filter/EncoderFilter.smali" "replace" \
-            'configCodec(Lcom/samsung/android/sum/core/message/Message;)V' \
-            'const v2, 0x7f420888' \
-            'const v2, 0x7f000789'
     fi
 fi
 
