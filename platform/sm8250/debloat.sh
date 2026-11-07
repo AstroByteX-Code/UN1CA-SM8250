@@ -27,7 +27,7 @@ system/app//Rampart
 
 # GameDriver
 SYSTEM_DEBLOAT+="
-system/priv-app/GameDriver-SM8650
+system/priv-app/GameDriver-SM8550
 "
 
 # system_ext clean-up
