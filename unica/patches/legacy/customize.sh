@@ -126,7 +126,8 @@ if [ "$TARGET_PLATFORM_SDK_VERSION" -lt "34" ]; then
     PATCHED=true
     APPLY_PATCH "system" "system/framework/framework.jar" \
         "$MODPATH/camera/framework.jar/0001-Backport-legacy-CameraMetadataNative-code.patch"
-    if $TARGET_CAMERA_SUPPORT_MASS_APP_FLAVOR; then
+    if $TARGET_CAMERA_SUPPORT_MASS_APP_FLAVOR && \
+            [ -f "$APKTOOL_DIR/system/priv-app/SamsungCamera/SamsungCamera.apk/smali_classes3/com/samsung/android/camera/core2/maker/AutoBeautyPhotoMaker.smali" ]; then
         APPLY_PATCH "system" "system/priv-app/SamsungCamera/SamsungCamera.apk" \
             "$MODPATH/camera_mass/SamsungCamera.apk/0001-Backport-legacy-Scene-detection-code.patch"
     else
