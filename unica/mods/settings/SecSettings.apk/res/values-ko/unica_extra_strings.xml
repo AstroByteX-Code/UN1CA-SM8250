@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="unica_dynamic_island_title">다이나믹 아일랜드</string>
+    <string name="unica_dynamic_island_summary">모양, 애니메이션, 위치, 알림, 앱 및 규칙</string>
+    <string name="unica_native_blur_summary">캡처한 블러 대신 실시간 패널 블러를 사용합니다. 다시 시작해야 적용됩니다.</string>
+</resources>

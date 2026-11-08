@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="unica_settings_bg_transparency_enabled_title">설정 배경 투명하게</string>
+    <string name="unica_settings_bg_transparency_enabled_summary">아래 슬라이더로 설정 배경의 투명도를 조절합니다.</string>
+    <string name="unica_settings_bg_transparency_title">투명도</string>
+    <string name="unica_settings_bg_transparency_summary">최소는 투명도 70&#37;에서 시작합니다. 중간은 85&#37;이며, 최대로 하면 설정 배경이 완전히 투명해집니다.</string>
+    <string name="unica_settings_bg_transparency_low">최소</string>
+    <string name="unica_settings_bg_transparency_high">최대</string>
+</resources>
