@@ -1,6 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <PreferenceScreen android:title="@string/unica_ui_settings_title" settings:hierarchicalParentFragment="io.mesalabs.unica.settings.UnicaSettingsFragment" settings:topLevelPreferenceKey="unica_ui_settings"
   xmlns:android="http://schemas.android.com/apk/res/android" xmlns:settings="http://schemas.android.com/apk/res-auto">
+  <Preference android:icon="@drawable/ic_settings_enable" android:title="@string/unica_dynamic_island_title" android:key="unica_dynamic_island" android:summary="@string/unica_dynamic_island_summary" settings:controller="io.mesalabs.unica.island.DynamicIslandPreferenceController">
+      <intent android:targetPackage="com.android.settings" android:targetClass="dev.android.dynamicisland.settings.SettingsActivity" />
+    </Preference>  
     <SecSwitchPreference android:title="@string/unica_native_blur_title" android:key="unica_native_blur" settings:controller="io.mesalabs.unica.settings.ui.LiveBlurPreferenceController" />
     <SecDropDownPreference android:title="@string/unica_launcher_anim_type_title" android:key="unica_launcher_anim_type" android:summary="%s" settings:controller="io.mesalabs.unica.settings.ui.LauncherAnimationTypePreferenceController" />
     <com.samsung.android.settings.widget.SecInsetCategoryPreference />

@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="unica_dynamic_island_title">Dynamic Island</string>
+    <string name="unica_dynamic_island_summary">Appearance, animation, position, notifications, apps and rules.</string>
+    <string name="unica_native_blur_summary">Use live panel blur instead of captured blur. Restart required.</string>
+</resources>
