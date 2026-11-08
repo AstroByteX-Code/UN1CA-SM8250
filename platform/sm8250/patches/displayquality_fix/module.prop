@@ -1,0 +1,4 @@
+id=displayquality_fix
+name=DisplayQuality bootloop fix
+author=claude
+description=A16 SemDisplayQualityManagerService blocks system_server main thread in ServiceManager.waitForService(vendor.samsung.hardware.displayquality.ISehDisplayQuality/default), a HAL the T970 A11 vendor lacks -> 66s PF_WD watchdog -> RescueParty bootloop. Swap waitForService->checkService (non-blocking; the client already null-guards the result).
