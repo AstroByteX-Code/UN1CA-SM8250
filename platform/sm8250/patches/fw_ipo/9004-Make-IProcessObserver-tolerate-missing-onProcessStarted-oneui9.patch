@@ -1,0 +1,31 @@
+From 0000000000000000000000000000000000009004 Mon Sep 17 00:00:00 2001
+From: MinsOS <minsos@local>
+Date: Sun, 4 Oct 2026 23:00:00 +0900
+Subject: [PATCH] IProcessObserver tolerates a missing onProcessStarted (One UI 9, y2q)
+
+Settings mod framework.jar 9004-oneui85 (30a4599) re-derived on the S918B
+IProcessObserver$Stub. An app built against an older IProcessObserver (Shizuku) has no
+5-arg onProcessStarted, so the dispatch throws AbstractMethodError on its binder thread
+and the app dies at start. Catch it and return the transaction as handled. One UI 9 uses
+v1..v6 for the call and v0 for the result (8.5: v2..v7 and v1), so the handler takes
+the exception in v1 and v0 (true) is returned unchanged.
+---
+--- a/smali/android/app/IProcessObserver$Stub.smali
++++ b/smali/android/app/IProcessObserver$Stub.smali
+@@ -263,8 +263,16 @@
+ 
+     move-object v1, p0
+ 
++    :try_start_ipo
+     invoke-virtual/range {v1 .. v6}, Landroid/app/IProcessObserver$Stub;->onProcessStarted(IIILjava/lang/String;Ljava/lang/String;)V
++    :try_end_ipo
++    .catch Ljava/lang/AbstractMethodError; {:try_start_ipo .. :try_end_ipo} :catch_ipo
+ 
+     :goto_0
+     return v0
++
++    :catch_ipo
++    move-exception v1
++
++    goto :goto_0
+ .end method

@@ -1,0 +1,6 @@
+id=fw_gpu_preload
+name=Stock SM8250 GPU driver packages allowed to preload
+version=v1
+versionCode=1
+author=MinsOS
+description=The S918B donor's allowed-system-preload list stops at sm8550, so package manager rejected the stock SM8250 game driver, the Qualcomm prerelease driver and the Samsung Vulkan profiler layer that the G986N vendor build.prop names, and none of them got installed (r10). An extra sysconfig file allows exactly those three, as the tablets do since 05cf5f3.

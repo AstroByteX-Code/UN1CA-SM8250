@@ -13,6 +13,7 @@
 /system/framework/com\.android\.media\.remotedisplay\.jar u:object_r:system_file:s0
 /system/framework/uibc_java\.jar u:object_r:system_file:s0
 /system/lib u:object_r:system_file:s0
+/system/lib/libaudioclient_shim\.so u:object_r:system_lib_file:s0
 /system/lib/libhdcp2\.so u:object_r:system_lib_file:s0
 /system/lib/libremotedisplay\.so u:object_r:system_lib_file:s0
 /system/lib/libremotedisplay_wfd\.so u:object_r:system_lib_file:s0
