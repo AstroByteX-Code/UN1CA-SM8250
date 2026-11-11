@@ -1,0 +1,4 @@
+product 0 0 755 capabilities=0x0
+product/overlay 0 0 755 capabilities=0x0
+product/overlay/CutoutProtectionOff 0 0 644 capabilities=0x0
+product/overlay/CutoutProtectionOff/CutoutProtectionOff.apk 0 0 644 capabilities=0x0 
