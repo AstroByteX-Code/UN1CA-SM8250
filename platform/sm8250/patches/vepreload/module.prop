@@ -1,0 +1,4 @@
+id=vepreload
+version=1.1
+author=Daredevil
+description=Fixes crashes in com.sec.android.app.vepreload (CREATE_MOVIE) and gallery audio eraser by patching libveframework (setVideoFrame ABI) and libaplayer (UBSan mul-overflow abort).
