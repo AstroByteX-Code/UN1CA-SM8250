@@ -39,6 +39,12 @@
     <local name="BACK_WIDE_CAMERA_RESOLUTION_1BY1_LARGE" value="2992x2992"/>
     <local name="BACK_WIDE_CAMERA_RESOLUTION_FULL_RATIO" value="4000x1800"/>
 
+    <!-- Capture resolution - BACK TELE -->
+    <local name="BACK_TELE_CAMERA_RESOLUTION_4BY3_LARGE" value="4000x3000"/>
+    <local name="BACK_TELE_CAMERA_RESOLUTION_16BY9_LARGE" value="4000x2256"/>
+    <local name="BACK_TELE_CAMERA_RESOLUTION_1BY1_LARGE" value="2992x2992"/>
+    <local name="BACK_TELE_CAMERA_RESOLUTION_FULL_RATIO" value="4000x1800"/>
+
     <!-- Capture resolution - FRONT -->
     <local name="FRONT_CAMERA_PICTURE_DEFAULT_RESOLUTION" value="3648x2736"/>
     <local name="FRONT_CAMERA_RESOLUTION_4BY3_LARGE" value="3648x2736"/>
@@ -103,7 +109,7 @@
     <local name="SUPPORT_SELFIE_TONE_MODE" value="true"/>
 
     <!-- Live focus & bokeh features -->
-    <local name="SUPPORT_LIVE_FOCUS_BACK_CAMERA_ANGLE_CHANGE_BY_ZOOM" value="false"/>
+    <local name="SUPPORT_LIVE_FOCUS_BACK_CAMERA_ANGLE_CHANGE_BY_ZOOM" value="true"/>
     <local name="SUPPORT_LIVE_FOCUS_HDR_CAPTURE" value="true"/>
     <local name="SUPPORT_LIVE_FOCUS_SCENE_DETECTION_MODE" value="true"/>
     <local name="SUPPORT_LIVE_FOCUS_TORCH_FLASH" value="true"/>
@@ -113,7 +119,7 @@
     <local name="SUPPORT_DUAL_BOKEH_EFFECT" value="true"/>
 
     <!-- Photo features -->
-    <local name="MOTION_PHOTO_RECORDING_FPS" value="30"/>
+    <local name="MOTION_PHOTO_RECORDING_FPS" value="60"/>
     <local name="SUPPORT_POST_PICTURE_PROCESSING" value="true"/>
     <local name="SUPPORT_POST_PROCESSING_MOTION_PHOTO" value="true"/>
 
@@ -141,6 +147,8 @@
     <local name="SUPPORT_PRO_VIDEO_AUDIO_BLUETOOTH_MIX_MIC" value="true"/>
     <local name="SUPPORT_PRO_VIDEO_ZOOM_ROCKER" value="true"/>
     <local name="SUPPORT_BACK_WIDE_PRO" value="true"/>
+    <local name="SUPPORT_BACK_TELE_PRO" value="true"/>
+    <local name="SUPPORT_PRO_VIDEO_TELE_LENS_60FPS" value="true"/>
     <local name="SUPPORT_HISTOGRAM" value="true"/>
     <local name="SUPPORT_EXPAND_SHUTTER_SPEED" value="true"/>
 
@@ -193,10 +201,12 @@
     <local name="SUPPORT_TAP_AND_HOLD_CAMERA_BUTTON" value="true"/>
     <local name="SUPPORT_CAMERA_ASSISTANT" value="true"/>
     <local name="CAMERA_QUICK_LAUNCH_USING_POWER_KEY" value="true"/>
-    <local name="SHOW_PAUSED_PREVIEW_TO_RESUME_CAMERA" value="true"/>
+    <local name="SHOW_PAUSED_PREVIEW_TO_RESUME_CAMERA" value="false"/>
 	<!-- Special Features - Camera Settings -->
     <local name="SUPPORT_HEIF_FORMAT" value="true"/>
     <local name="SUPPORT_AUTO_HDR_MENU" value="true"/>
+    <local name="SUPPORT_VIDEO_FORMAT" value="true"/>
+    <local name="SUPPORT_HDR10_PLUS_RECORDING" value="true"/>
     <!-- Special Features - Capture -->
     <local name="SUPPORT_QUICK_TAKE" value="true"/>
     <!-- Special Features - Record -->
