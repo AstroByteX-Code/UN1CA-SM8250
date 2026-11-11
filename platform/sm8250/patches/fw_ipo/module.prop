@@ -1,0 +1,6 @@
+id=fw_ipo
+name=IProcessObserver tolerates apps without the 5-arg onProcessStarted (9004 on One UI 9)
+version=v1
+versionCode=1
+author=MinsOS
+description=An app built against an older IProcessObserver (Shizuku's server) has no 5-arg onProcessStarted, so the framework dispatch throws AbstractMethodError on its binder thread and the app dies at start. The tablets catch it (settings mod framework.jar 9004, 30a4599); that patch SKIPped on One UI 9 because the dispatch registers moved. Same catch, re-derived on the S918B IProcessObserver$Stub.

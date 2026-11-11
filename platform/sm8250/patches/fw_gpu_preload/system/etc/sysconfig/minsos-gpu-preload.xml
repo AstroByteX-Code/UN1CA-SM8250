@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<config>
+    <allowed-system-preload package="com.samsung.gamedriver.sm8250"/>
+    <allowed-system-preload package="com.qualcomm.qti.gpudrivers.kona.api30"/>
+    <allowed-system-preload package="com.samsung.vklayer.sm8250"/>
+</config>

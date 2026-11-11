@@ -1,0 +1,4 @@
+id=gnss
+name=GNSS compatibility
+author=GoRhanHee
+description=Keeps the SM8250 HIDL GNSS stack without the donor AIDL companion.

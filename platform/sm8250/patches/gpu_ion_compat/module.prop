@@ -1,0 +1,4 @@
+id=gpu_ion_compat
+name=ION and GPU access for an Android 11-era vendor on Android 17
+author=MinsOS
+description=Android 17 dropped /dev/ion from plat_file_contexts and moved ion_device, gpu_device and sysfs_gpu access out of the platform policy (surfaceflinger, system_server, apps and the graphics HALs lost GPU access too). y2q's vendor predates that, so with the ueventd fix in place Keymaster still failed with "QSEECOMAPI Error::Cannot open ION device" (One UI 9 r3, 10-04). Labels /dev/ion ion_device again in system_ext and appends Android 16's 79 rules on those three targets, regenerated against Android 17's declarations by ops/oneui9_probe/gen_ion_compat.py.

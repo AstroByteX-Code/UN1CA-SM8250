@@ -73,6 +73,19 @@ LOG_STEP_OUT
 
 LOG_STEP_IN "- Removing HDR10+ check"
 
+if [ -f "$WORK_DIR/system/system/lib/libstagefright.so" ]; then
+    if xxd -p -c 0 "$WORK_DIR/system/system/lib/libstagefright.so" | grep -q "dbf8002043f2685004990844824240f0a583"; then
+        # ARM32 S911B base: skip the conditional branch into ACodec's HDR10+ abort path.
+        HEX_PATCH "$WORK_DIR/system/system/lib/libstagefright.so" \
+            "dbf8002043f2685004990844824240f0a583" \
+            "dbf8002043f2685004990844824200bf00bf"
+    elif xxd -p -c 0 "$WORK_DIR/system/system/lib/libstagefright.so" | grep -q "dbf8002043f2685004990844824200bf00bf"; then
+        LOG "- 32-bit HDR10+ abort check already patched"
+    else
+        LOG "- No known 32-bit HDR10+ abort check found in libstagefright.so"
+    fi
+fi
+
 if [ -f "$WORK_DIR/system/system/lib64/libstagefright.so" ]; then
     if xxd -p -c 0 "$WORK_DIR/system/system/lib64/libstagefright.so" | grep -q "010140f9c8f5059440470034"; then
         # Android 17 / One UI 9.0 (S928B QSSI base): bypass HEVC HDR10+ abort in ACodec::setupVideoEncoder
@@ -120,7 +133,6 @@ if [ -f "$WORK_DIR/system/system/lib64/libstagefright.so" ]; then
             "e10740b9e22340b9e00313aa44aa059411000014fa03002a"
     fi
 fi
-LOG_STEP_OUT
 
 # Vendor bufferqueue helper: patch backward-in-time timestamp check
 if [ -f "$WORK_DIR/vendor/lib/libstagefright_bufferqueue_helper_vendor.so" ] && \
@@ -129,7 +141,6 @@ if [ -f "$WORK_DIR/vendor/lib/libstagefright_bufferqueue_helper_vendor.so" ] && 
     HEX_PATCH "$WORK_DIR/vendor/lib/libstagefright_bufferqueue_helper_vendor.so" \
         "d7e94601401b71eb060006da" \
         "d7e94601401b71eb060000bf"
-    LOG_STEP_OUT
 fi
-
+LOG_STEP_OUT
 

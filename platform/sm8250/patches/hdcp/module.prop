@@ -1,0 +1,4 @@
+id=hdcp
+name=Legacy HDCP provisioning client
+author=GoRhanHee
+description=Matches the provisioning client to the target HIDL service.
