@@ -1,0 +1,40 @@
+diff --git a/smali/com/android/server/am/ActivityManagerService$MainHandler$1.smali b/smali/com/android/server/am/ActivityManagerService$MainHandler$1.smali
+--- a/smali/com/android/server/am/ActivityManagerService$MainHandler$1.smali
++++ b/smali/com/android/server/am/ActivityManagerService$MainHandler$1.smali
+@@ -1176,9 +1176,7 @@
+     :cond_1e
+     :goto_d
+-    invoke-static {}, Landroid/os/Debug;->getGpuTotalUsageKb()J
+-
+-    move-result-wide v13
++    const-wide/16 v13, -0x1
+ 
+     cmp-long v5, v13, v17
+ 
+     if-ltz v5, :cond_20
+diff --git a/smali/com/android/server/am/ActivityManagerService.smali b/smali/com/android/server/am/ActivityManagerService.smali
+--- a/smali/com/android/server/am/ActivityManagerService.smali
++++ b/smali/com/android/server/am/ActivityManagerService.smali
+@@ -22655,9 +22655,7 @@
+     :cond_4c
+     :goto_3b
+-    invoke-static {}, Landroid/os/Debug;->getGpuTotalUsageKb()J
+-
+-    move-result-wide v9
++    const-wide/16 v9, -0x1
+ 
+     cmp-long v3, v9, v23
+ 
+     if-ltz v3, :cond_4e
+diff --git a/smali_classes2/com/android/server/stats/pull/StatsPullAtomService.smali b/smali_classes2/com/android/server/stats/pull/StatsPullAtomService.smali
+--- a/smali_classes2/com/android/server/stats/pull/StatsPullAtomService.smali
++++ b/smali_classes2/com/android/server/stats/pull/StatsPullAtomService.smali
+@@ -6727,7 +6727,5 @@
+     long-to-int v7, v0
+ 
+-    invoke-static {}, Landroid/os/Debug;->getGpuTotalUsageKb()J
+-
+-    move-result-wide v0
++    const-wide/16 v0, -0x1
+ 
+     long-to-int v9, v0

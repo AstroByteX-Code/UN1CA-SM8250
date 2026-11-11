@@ -319,6 +319,30 @@ if [ "$TARGET_PLATFORM_SDK_VERSION" -lt "35" ]; then
     fi
 fi
 
+if [ "$TARGET_PLATFORM_SDK_VERSION" -lt "35" ]; then
+    DECODE_APK "system" "system/framework/framework.jar" || return 1
+    FRAMEWORK_JAR_DIR="$APKTOOL_DIR/system/framework/framework.jar"
+    if grep -R -Fq 'invoke-static {}, Landroid/os/Debug;->getGpuTotalUsageKb()J' "$FRAMEWORK_JAR_DIR"; then
+        APPLY_PATCH "system" "system/framework/framework.jar" \
+            "$MODPATH/gpu_meminfo/framework.jar/0001-Nuke-getGpuTotalUsageKb.patch"
+    else
+        LOG "  - framework.jar has no getGpuTotalUsageKb() calls; skipping framework patch"
+    fi
+    DECODE_APK "system" "system/framework/services.jar" || return 1
+    SERVICES_JAR_DIR="$APKTOOL_DIR/system/framework/services.jar"
+    if [ -f "$SERVICES_JAR_DIR/smali/com/android/server/am/MemoryUsageStats.smali" ] && \
+            grep -Fq 'invoke-static {}, Landroid/os/Debug;->getGpuTotalUsageKb()J' \
+                "$SERVICES_JAR_DIR/smali/com/android/server/am/MemoryUsageStats.smali"; then
+        APPLY_PATCH "system" "system/framework/services.jar" \
+            "$MODPATH/gpu_meminfo/services.jar/0001-Nuke-getGpuTotalUsageKb.patch"
+    elif grep -R -Fq 'invoke-static {}, Landroid/os/Debug;->getGpuTotalUsageKb()J' "$SERVICES_JAR_DIR"; then
+        APPLY_PATCH "system" "system/framework/services.jar" \
+            "$MODPATH/gpu_meminfo/services.jar/0002-Nuke-getGpuTotalUsageKb-modern.patch"
+    else
+        LOG "  - services.jar has no getGpuTotalUsageKb() calls; skipping services patch"
+    fi
+fi
+
 # Ensure IQtiComposer support (pre-API 36)
 # - Disable "ro.product.first_api_level" < 34 check
 if [ "$TARGET_PLATFORM_SDK_VERSION" -lt "36" ]; then
