@@ -1,0 +1,10 @@
+ 0 2000 755 capabilities=0x0
+vendor/etc 0 2000 755 capabilities=0x0
+vendor/etc/midas 0 2000 755 capabilities=0x0
+vendor/etc/midas/midas_config.json 0 0 644 capabilities=0x0
+vendor/etc/midas/SRIBMidas_aiUPSCALER_1X_LITE_V100_INT8.tflite 0 0 644 capabilities=0x0
+vendor/etc/midas/SRIBMidas_aiUPSCALER_1X_V210_FP32.tflite 0 0 644 capabilities=0x0
+vendor/etc/midas/SRIBMidas_aiUPSCALER_2X_V210_FP32.tflite 0 0 644 capabilities=0x0
+vendor/etc/midas/SRIBMidas_aiUPSCALER_3X_V210_FP32.tflite 0 0 644 capabilities=0x0
+vendor/etc/midas/SRIBMidas_aiUPSCALER_4X_V210_FP32.tflite 0 0 644 capabilities=0x0
+

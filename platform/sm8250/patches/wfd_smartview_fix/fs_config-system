@@ -13,6 +13,7 @@ system/framework 0 0 755 capabilities=0x0
 system/framework/com.android.media.remotedisplay.jar 0 0 644 capabilities=0x0
 system/framework/uibc_java.jar 0 0 644 capabilities=0x0
 system/lib 0 0 755 capabilities=0x0
+system/lib/libaudioclient_shim.so 0 0 644 capabilities=0x0
 system/lib/libhdcp2.so 0 0 644 capabilities=0x0
 system/lib/libremotedisplay.so 0 0 644 capabilities=0x0
 system/lib/libremotedisplay_wfd.so 0 0 644 capabilities=0x0

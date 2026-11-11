@@ -1,0 +1,4 @@
+id=face_cropper
+name=FaceService image cropper compatibility
+author=GoRhanHee
+description=Uses the target image cropper privately in FaceService on Android 17.

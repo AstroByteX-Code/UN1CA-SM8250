@@ -1,0 +1,6 @@
+id=fw_native_zygote_guard
+name=Give up on a dead native app zygote after 12 s (One UI 9)
+version=v1
+versionCode=1
+author=MinsOS
+description=Android 17 starts a native-only isolated service (Chrome's first-run renderer) through a child of zygote_next. If that child dies before it listens, system_server retried the dead socket for 60 s on the ActivityManager:procStart thread, leaking a socket per try, and the watchdog soft-rebooted the phone (r16, 10-10). For the native case only, the wait now ends after about 12 s and closes every failed socket; the start then fails and Android stops the app instead of the whole system restarting. The cause itself (no cap 40 in the 4.19 kernel) is fixed by kernel patch 0031; this guard is for the next way such a child can die.

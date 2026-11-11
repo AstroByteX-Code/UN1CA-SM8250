@@ -1,0 +1,70 @@
+From 42d5ee0340b642f89d5d4bd0c9512e7d5c338b77 Mon Sep 17 00:00:00 2001
+From: MinsOS <minsos@localhost>
+Date: Sat, 10 Oct 2026 15:30:00 +0900
+Subject: [PATCH] Give up on a dead native app zygote after 12s
+
+On y2q One UI 9 Chrome binds a native-only isolated service, so
+AppZygote starts its child zygote through zygote_next and waits in
+ZygoteProcess.waitForConnectionToZygote(LocalSocketAddress, true).
+When that child dies before it opens its socket, the wait retries the
+dead socket 12001 times, 5 ms apart, on the ActivityManager:procStart
+thread. AppZygote.startProcess then retries once more, the thread stays
+blocked past 60 s and the system_server watchdog soft-reboots the phone
+(r16, 10-10). Every failed try also leaked the LocalSocket it had just
+opened.
+
+For the native app zygote only (isNative true), stop after 2201 tries,
+about 12 s at the 5.4 ms per try that r16 logged, and close the socket
+of every failed try. 12 s leaves room for a slow but healthy child (the
+window also covers its seccomp setup and the app's native preload), and
+two waits per start stay under the watchdog's 30 s half check. The
+primary, webview and Java app zygotes keep the 12001-try bound; on
+their path the socket register is only a null that closeQuietly
+ignores. The Slog.wtf after the last try stays.
+---
+ smali_classes3/android/os/ZygoteProcess.smali | 10 ++++++++++
+ 1 file changed, 10 insertions(+)
+
+diff --git a/smali_classes3/android/os/ZygoteProcess.smali b/smali_classes3/android/os/ZygoteProcess.smali
+index f90c970..cd46560 100644
+--- a/smali_classes3/android/os/ZygoteProcess.smali
++++ b/smali_classes3/android/os/ZygoteProcess.smali
+@@ -2315,11 +2315,17 @@
+ 
+     const/16 v0, 0x2ee0
+ 
++    if-eqz p1, :goto_0
++
++    const/16 v0, 0x898
++
+     :goto_0
+     const-string v1, "ZygoteProcess"
+ 
+     if-ltz v0, :cond_1
+ 
++    const/4 v4, 0x0
++
+     if-eqz p1, :cond_0
+ 
+     :try_start_0
+@@ -2329,6 +2335,8 @@
+ 
+     invoke-direct {v2, v3}, Landroid/net/LocalSocket;-><init>(I)V
+ 
++    move-object v4, v2
++
+     invoke-virtual {v2, p0}, Landroid/net/LocalSocket;->connect(Landroid/net/LocalSocketAddress;)V
+ 
+     invoke-virtual {v2}, Landroid/net/LocalSocket;->close()V
+@@ -2352,6 +2360,8 @@
+     :catch_0
+     move-exception v2
+ 
++    invoke-static {v4}, Llibcore/io/IoUtils;->closeQuietly(Ljava/lang/AutoCloseable;)V
++
+     new-instance v3, Ljava/lang/StringBuilder;
+ 
+     const-string v4, "Got error connecting to zygote, retrying. msg= "
+-- 
+2.43.0
+

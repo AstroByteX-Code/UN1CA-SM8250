@@ -1,0 +1,8 @@
+/vendor u:object_r:vendor_file:s0
+/vendor/etc u:object_r:vendor_file:s0
+/vendor/etc/midas/midas_config\.json u:object_r:vendor_configs_file:s0
+/vendor/etc/midas/SRIBMidas_aiUPSCALER_1X_LITE_V100_INT8\.tflite u:object_r:vendor_configs_file:s0
+/vendor/etc/midas/SRIBMidas_aiUPSCALER_1X_V210_FP32\.tflite u:object_r:vendor_configs_file:s0
+/vendor/etc/midas/SRIBMidas_aiUPSCALER_2X_V210_FP32\.tflite u:object_r:vendor_configs_file:s0
+/vendor/etc/midas/SRIBMidas_aiUPSCALER_3X_V210_FP32\.tflite u:object_r:vendor_configs_file:s0
+/vendor/etc/midas/SRIBMidas_aiUPSCALER_4X_V210_FP32\.tflite u:object_r:vendor_configs_file:s0
