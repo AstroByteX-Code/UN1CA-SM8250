@@ -10,21 +10,27 @@ concurrency:
 jobs:
   build:
     runs-on: ubuntu-24.04
+
     strategy:
       matrix:
-        target: [ r8q ]
+        target: [r8q]
 
     steps:
       - name: Checkout repo
-        uses: actions/checkout@v7
+        uses: actions/checkout@v4
         with:
-          submodules: 'recursive'
+          submodules: recursive
 
       - name: Free disk space (1/3)
         run: |
-          sudo rm -rf /usr/share/dotnet /usr/local/lib/android /opt/ghc /opt/hostedtoolcache/CodeQL
-          sudo docker image prune --all --force
-          sudo docker builder prune -a
+          sudo rm -rf \
+            /usr/share/dotnet \
+            /usr/local/lib/android \
+            /opt/ghc \
+            /opt/hostedtoolcache/CodeQL
+
+          sudo docker image prune -af
+          sudo docker builder prune -af
 
       - name: Free disk space (2/3)
         uses: jlumbroso/free-disk-space@main
@@ -34,27 +40,45 @@ jobs:
       - name: Free disk space (3/3)
         uses: rokibhasansagar/slimhub_actions@main
         with:
-          retain: 'compiler_cmake'
+          retain: compiler_cmake
 
       - name: Set up build environment
         run: |
           sudo apt update
+
           DEBIAN_FRONTEND=noninteractive sudo apt install -yq \
-            attr ccache clang ffmpeg libbrotli-dev libbz2-dev \
-            libgtest-dev libprotobuf-dev libunwind-dev libpcre2-dev \
-            libzstd-dev lld protobuf-compiler webp linux-headers-$(uname -r)
-          sudo modprobe erofs f2fs
+            attr \
+            ccache \
+            clang \
+            curl \
+            ffmpeg \
+            libbrotli-dev \
+            libbz2-dev \
+            libgtest-dev \
+            libprotobuf-dev \
+            libunwind-dev \
+            libpcre2-dev \
+            libzstd-dev \
+            lld \
+            protobuf-compiler \
+            webp \
+            linux-headers-$(uname -r)
+
+          sudo modprobe erofs || true
+          sudo modprobe f2fs || true
+
           git config --global user.name "github-actions[bot]"
           git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
           echo -n "${{ secrets.PLATFORM_KEY_PK8 }}" | base64 --decode > security/unica_platform.pk8
           echo -n "${{ secrets.PLATFORM_KEY_PEM }}" | base64 --decode > security/unica_platform.x509.pem
 
       - name: Set up JDK 17
-        uses: actions/setup-java@v6
+        uses: actions/setup-java@v4
         with:
-          distribution: 'temurin'
-          java-version: '17'
-          cache: 'gradle'
+          distribution: temurin
+          java-version: "17"
+          cache: gradle
 
       - name: Build dependencies
         run: |
@@ -79,25 +103,78 @@ jobs:
       - name: Build ROM
         run: |
           source ./buildenv.sh ${{ matrix.target }}
-          ./scripts/make_rom.sh 
+          ./scripts/make_rom.sh
 
-      - name: Download PixelDrain CLI (pd)
+      - name: Install rclone
         run: |
-          curl -L https://github.com/jkawamoto/go-pixeldrain/releases/download/v0.7.6/pd_0.7.6_linux_amd64.tar.gz -o pd.tar.gz
-          tar -xvf pd.tar.gz
+          curl https://rclone.org/install.sh | sudo bash
+
+      - name: Configure Dropbox
+        env:
+          DROPBOX_APP_KEY: ${{ secrets.DROPBOX_APP_KEY }}
+          DROPBOX_APP_SECRET: ${{ secrets.DROPBOX_APP_SECRET }}
+          DROPBOX_TOKEN: ${{ secrets.DROPBOX_TOKEN }}
+        run: |
+          mkdir -p ~/.config/rclone
+
+          cat > ~/.config/rclone/rclone.conf <<EOF
+          [dropbox]
+          type = dropbox
+          client_id = ${DROPBOX_APP_KEY}
+          client_secret = ${DROPBOX_APP_SECRET}
+          token = ${DROPBOX_TOKEN}
+          EOF
+
+      - name: Verify Dropbox Login
+        run: |
+          rclone about dropbox:
+
+      - name: Download PixelDrain CLI
+        run: |
+          curl -L \
+            https://github.com/jkawamoto/go-pixeldrain/releases/download/v0.7.6/pd_0.7.6_linux_amd64.tar.gz \
+            -o pd.tar.gz
+
+          tar -xzf pd.tar.gz
           chmod +x pd
           sudo mv pd /usr/local/bin/pd
-          
+
       - name: Upload ROM to PixelDrain
         env:
           PIXELDRAIN_API_KEY: ${{ secrets.PIXELDRAIN_API_KEY }}
         run: |
           cd out
+
           for ROM_FILE in *.zip; do
-            if [ ! -f "$ROM_FILE" ]; then
-              echo "No ROM zip found!"
-              exit 1
-            fi
-            echo "Uploading $ROM_FILE to Pixeldrain..."
-            pd --api-key "$PIXELDRAIN_API_KEY" upload "$ROM_FILE" | sed 's|api/file|u|g'
+            [ -f "$ROM_FILE" ] || continue
+
+            echo "Uploading $ROM_FILE to PixelDrain..."
+
+            PD_URL=$(pd --api-key "$PIXELDRAIN_API_KEY" upload "$ROM_FILE" | sed 's|api/file|u|g')
+
+            echo ""
+            echo "========================================="
+            echo "PixelDrain URL:"
+            echo "$PD_URL"
+            echo "========================================="
+            echo ""
           done
+
+      - name: Upload Build Artifacts to Dropbox
+        run: |
+          cd out
+
+          for FILE in *.zip *.img *.tar *.md5 *.txt; do
+            [ -e "$FILE" ] || continue
+
+            echo "Uploading $FILE to Dropbox..."
+
+            rclone copyto \
+              "$FILE" \
+              "dropbox:${{ matrix.target }}/$FILE" \
+              -P
+          done
+
+      - name: Verify Dropbox Upload
+        run: |
+          rclone ls "dropbox:${{ matrix.target }}"
