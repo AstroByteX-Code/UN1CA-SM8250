@@ -202,6 +202,13 @@ LOG "- Downloading latest Game Booster app"
 DOWNLOAD_FILE "$(GET_GALAXY_STORE_DOWNLOAD_URL "com.samsung.android.game.gametools")" \
     "$WORK_DIR/system/system/priv-app/GameTools_Dream/GameTools_Dream.apk"
 
+# Apply platform adaptations after the common S26 files have been installed.
+if [ -f "$SRC_DIR/platform/$TARGET_PLATFORM/mods/miracle/customize.sh" ]; then
+    source "$SRC_DIR/platform/$TARGET_PLATFORM/mods/miracle/customize.sh" || return 1
+fi
+
+SET_FLOATING_FEATURE_CONFIG "SEC_FLOATING_FEATURE_COMMON_CONFIG_AI_VERSION" "20263"
+
 # Pet Detector in Galaxy AI
 LOG_STEP_IN "- Adding Pet Detector support in Galaxy AI features"
 if [ -d "$WORK_DIR/vendor/etc/petdetector/studio_pd" ]; then
